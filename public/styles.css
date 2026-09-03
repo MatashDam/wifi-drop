@@ -39,7 +39,8 @@ body {
 
 button,
 textarea,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -128,6 +129,41 @@ button:disabled {
   margin: 3px 0 0;
   color: var(--quiet);
   font-size: 0.76rem;
+}
+
+.app-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.language-select {
+  min-height: 30px;
+  max-width: 136px;
+  flex: none;
+  padding: 0 29px 0 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  outline: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--quiet) 50%) right 13px center / 5px 5px no-repeat,
+    linear-gradient(135deg, var(--quiet) 50%, transparent 50%) right 9px center / 5px 5px no-repeat,
+    rgba(242, 242, 245, 0.82);
+  color: var(--body);
+  font-size: 0.76rem;
+  font-weight: 510;
+  appearance: none;
+}
+
+.language-select:focus {
+  border-color: rgba(0, 122, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.11);
+}
+
+.language-select.compact {
+  max-width: 116px;
+  min-height: 28px;
+  background-color: rgba(255, 255, 255, 0.72);
 }
 
 .privacy-chip {
@@ -522,6 +558,13 @@ code {
   line-height: 1.05;
 }
 
+.phone-title-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .online-pill {
   flex: none;
   min-height: 28px;
@@ -809,6 +852,10 @@ textarea::placeholder {
   .phone-title {
     display: grid;
     justify-content: stretch;
+  }
+
+  .phone-title-actions {
+    align-items: flex-start;
   }
 
   .online-pill {

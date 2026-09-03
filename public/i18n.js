@@ -1,0 +1,673 @@
+(function () {
+  const languages = {
+    it: {
+      name: "Italiano",
+      strings: {
+        appSubtitle: "Trasferimento locale",
+        cloudBadge: "Niente cloud",
+        statusListening: "In ascolto",
+        statusPaused: "Connessione in pausa",
+        statusLinkCopied: "Link copiato",
+        statusFolderOpened: "Cartella aperta",
+        statusQrActive: "Nuovo QR attivo",
+        statusTextCopied: "Testo copiato",
+        scanTitle: "Scansiona con l'iPhone",
+        scanInstructions: "Fotocamera -> inquadra il codice -> apri il link",
+        qrAlt: "QR code per aprire WiFi Drop su iPhone",
+        qrRegenerated: "QR rigenerato",
+        copy: "Copia",
+        copied: "Copiato",
+        regenerateQr: "Rigenera QR",
+        validWhileOpen: "Valido finche WiFi Drop resta aperto",
+        localOnlyTitle: "Solo rete locale",
+        localOnlyBody: "Il trasferimento avviene tra iPhone e PC sulla stessa Wi-Fi. Nessun server esterno, nessun account.",
+        receivedTitle: "Ricevuti",
+        openFolder: "Apri cartella",
+        open: "Apri",
+        noItems: "Nessun elemento",
+        oneItem: "1 elemento",
+        manyItems: "{count} elementi",
+        emptyTitle: "Nessun elemento",
+        emptyBody: "Scansiona il QR con la fotocamera dell'iPhone: quello che invii appare qui.",
+        textMeta: "Testo",
+        safariLabel: "WiFi Drop locale",
+        sendTitle: "Invia al PC",
+        connected: "Connesso",
+        sendType: "Tipo di invio",
+        tabText: "Testo",
+        tabFile: "File",
+        textLabel: "Testo",
+        textPlaceholder: "Incolla qui il testo",
+        textHelper: "Appare sul PC, pronto da copiare.",
+        sendText: "Invia testo",
+        sending: "Invio...",
+        textEmpty: "Scrivi o incolla qualcosa prima.",
+        textSending: "Invio testo...",
+        textSendFailed: "Non sono riuscito a inviare il testo.",
+        textSent: "Testo inviato al PC.",
+        chooseFiles: "Scegli foto o file",
+        fileWarning: "Invii solo i file selezionati. Il testo scritto in Testo resta sul telefono.",
+        sendFile: "Invia file",
+        sendOneFile: "Invia 1 file",
+        sendManyFiles: "Invia {count} file",
+        chooseAtLeastOne: "Scegli almeno un file.",
+        uploadSending: "Invio in corso...",
+        uploadFailed: "Invio non riuscito.",
+        filesSent: "File inviati al PC.",
+        remove: "Rimuovi",
+        removeFile: "Rimuovi {name}",
+        ready: "Pronto",
+        privateLink: "Link privato",
+        expiredTitle: "QR non valido",
+        expiredBody: "Questo link e scaduto. Rigenera il QR dalla dashboard sul PC."
+      }
+    },
+    en: {
+      name: "English",
+      strings: {
+        appSubtitle: "Local transfer",
+        cloudBadge: "No cloud",
+        statusListening: "Listening",
+        statusPaused: "Connection paused",
+        statusLinkCopied: "Link copied",
+        statusFolderOpened: "Folder opened",
+        statusQrActive: "New QR active",
+        statusTextCopied: "Text copied",
+        scanTitle: "Scan with iPhone",
+        scanInstructions: "Camera -> frame the code -> open the link",
+        qrAlt: "QR code to open WiFi Drop on iPhone",
+        qrRegenerated: "QR regenerated",
+        copy: "Copy",
+        copied: "Copied",
+        regenerateQr: "Regenerate QR",
+        validWhileOpen: "Valid while WiFi Drop stays open",
+        localOnlyTitle: "Local network only",
+        localOnlyBody: "Transfers happen between iPhone and PC on the same Wi-Fi. No external server, no account.",
+        receivedTitle: "Received",
+        openFolder: "Open folder",
+        open: "Open",
+        noItems: "No items",
+        oneItem: "1 item",
+        manyItems: "{count} items",
+        emptyTitle: "No items",
+        emptyBody: "Scan the QR with the iPhone camera: anything you send appears here.",
+        textMeta: "Text",
+        safariLabel: "Local WiFi Drop",
+        sendTitle: "Send to PC",
+        connected: "Connected",
+        sendType: "Send type",
+        tabText: "Text",
+        tabFile: "File",
+        textLabel: "Text",
+        textPlaceholder: "Paste text here",
+        textHelper: "It appears on the PC, ready to copy.",
+        sendText: "Send text",
+        sending: "Sending...",
+        textEmpty: "Write or paste something first.",
+        textSending: "Sending text...",
+        textSendFailed: "Could not send the text.",
+        textSent: "Text sent to the PC.",
+        chooseFiles: "Choose photos or files",
+        fileWarning: "Only selected files are sent. Text written in the Text tab stays on the phone.",
+        sendFile: "Send file",
+        sendOneFile: "Send 1 file",
+        sendManyFiles: "Send {count} files",
+        chooseAtLeastOne: "Choose at least one file.",
+        uploadSending: "Sending...",
+        uploadFailed: "Send failed.",
+        filesSent: "Files sent to the PC.",
+        remove: "Remove",
+        removeFile: "Remove {name}",
+        ready: "Ready",
+        privateLink: "Private link",
+        expiredTitle: "Invalid QR",
+        expiredBody: "This link has expired. Regenerate the QR from the PC dashboard."
+      }
+    },
+    es: {
+      name: "Español",
+      strings: {
+        appSubtitle: "Transferencia local",
+        cloudBadge: "Sin nube",
+        statusListening: "Escuchando",
+        statusPaused: "Conexión en pausa",
+        statusLinkCopied: "Enlace copiado",
+        statusFolderOpened: "Carpeta abierta",
+        statusQrActive: "Nuevo QR activo",
+        statusTextCopied: "Texto copiado",
+        scanTitle: "Escanea con el iPhone",
+        scanInstructions: "Cámara -> encuadra el código -> abre el enlace",
+        qrAlt: "Código QR para abrir WiFi Drop en iPhone",
+        qrRegenerated: "QR regenerado",
+        copy: "Copiar",
+        copied: "Copiado",
+        regenerateQr: "Regenerar QR",
+        validWhileOpen: "Válido mientras WiFi Drop siga abierto",
+        localOnlyTitle: "Solo red local",
+        localOnlyBody: "La transferencia ocurre entre iPhone y PC en la misma Wi-Fi. Sin servidor externo, sin cuenta.",
+        receivedTitle: "Recibidos",
+        openFolder: "Abrir carpeta",
+        open: "Abrir",
+        noItems: "Sin elementos",
+        oneItem: "1 elemento",
+        manyItems: "{count} elementos",
+        emptyTitle: "Sin elementos",
+        emptyBody: "Escanea el QR con la cámara del iPhone: lo que envíes aparecerá aquí.",
+        textMeta: "Texto",
+        safariLabel: "WiFi Drop local",
+        sendTitle: "Enviar al PC",
+        connected: "Conectado",
+        sendType: "Tipo de envío",
+        tabText: "Texto",
+        tabFile: "Archivo",
+        textLabel: "Texto",
+        textPlaceholder: "Pega el texto aquí",
+        textHelper: "Aparece en el PC, listo para copiar.",
+        sendText: "Enviar texto",
+        sending: "Enviando...",
+        textEmpty: "Escribe o pega algo primero.",
+        textSending: "Enviando texto...",
+        textSendFailed: "No se pudo enviar el texto.",
+        textSent: "Texto enviado al PC.",
+        chooseFiles: "Elegir fotos o archivos",
+        fileWarning: "Solo se envían los archivos seleccionados. El texto escrito en Texto se queda en el teléfono.",
+        sendFile: "Enviar archivo",
+        sendOneFile: "Enviar 1 archivo",
+        sendManyFiles: "Enviar {count} archivos",
+        chooseAtLeastOne: "Elige al menos un archivo.",
+        uploadSending: "Enviando...",
+        uploadFailed: "No se pudo enviar.",
+        filesSent: "Archivos enviados al PC.",
+        remove: "Eliminar",
+        removeFile: "Eliminar {name}",
+        ready: "Listo",
+        privateLink: "Enlace privado",
+        expiredTitle: "QR no válido",
+        expiredBody: "Este enlace ha caducado. Regenera el QR desde el panel del PC."
+      }
+    },
+    fr: {
+      name: "Français",
+      strings: {
+        appSubtitle: "Transfert local",
+        cloudBadge: "Sans cloud",
+        statusListening: "En écoute",
+        statusPaused: "Connexion en pause",
+        statusLinkCopied: "Lien copié",
+        statusFolderOpened: "Dossier ouvert",
+        statusQrActive: "Nouveau QR actif",
+        statusTextCopied: "Texte copié",
+        scanTitle: "Scannez avec l'iPhone",
+        scanInstructions: "Appareil photo -> cadrez le code -> ouvrez le lien",
+        qrAlt: "Code QR pour ouvrir WiFi Drop sur iPhone",
+        qrRegenerated: "QR régénéré",
+        copy: "Copier",
+        copied: "Copié",
+        regenerateQr: "Régénérer le QR",
+        validWhileOpen: "Valide tant que WiFi Drop reste ouvert",
+        localOnlyTitle: "Réseau local uniquement",
+        localOnlyBody: "Le transfert se fait entre l'iPhone et le PC sur le même Wi-Fi. Aucun serveur externe, aucun compte.",
+        receivedTitle: "Reçus",
+        openFolder: "Ouvrir le dossier",
+        open: "Ouvrir",
+        noItems: "Aucun élément",
+        oneItem: "1 élément",
+        manyItems: "{count} éléments",
+        emptyTitle: "Aucun élément",
+        emptyBody: "Scannez le QR avec l'appareil photo de l'iPhone : ce que vous envoyez apparaît ici.",
+        textMeta: "Texte",
+        safariLabel: "WiFi Drop local",
+        sendTitle: "Envoyer au PC",
+        connected: "Connecté",
+        sendType: "Type d'envoi",
+        tabText: "Texte",
+        tabFile: "Fichier",
+        textLabel: "Texte",
+        textPlaceholder: "Collez le texte ici",
+        textHelper: "Il apparaît sur le PC, prêt à copier.",
+        sendText: "Envoyer le texte",
+        sending: "Envoi...",
+        textEmpty: "Écrivez ou collez quelque chose d'abord.",
+        textSending: "Envoi du texte...",
+        textSendFailed: "Impossible d'envoyer le texte.",
+        textSent: "Texte envoyé au PC.",
+        chooseFiles: "Choisir photos ou fichiers",
+        fileWarning: "Seuls les fichiers sélectionnés sont envoyés. Le texte saisi dans Texte reste sur le téléphone.",
+        sendFile: "Envoyer fichier",
+        sendOneFile: "Envoyer 1 fichier",
+        sendManyFiles: "Envoyer {count} fichiers",
+        chooseAtLeastOne: "Choisissez au moins un fichier.",
+        uploadSending: "Envoi...",
+        uploadFailed: "Échec de l'envoi.",
+        filesSent: "Fichiers envoyés au PC.",
+        remove: "Retirer",
+        removeFile: "Retirer {name}",
+        ready: "Prêt",
+        privateLink: "Lien privé",
+        expiredTitle: "QR non valide",
+        expiredBody: "Ce lien a expiré. Régénérez le QR depuis le tableau de bord du PC."
+      }
+    },
+    de: {
+      name: "Deutsch",
+      strings: {
+        appSubtitle: "Lokale Übertragung",
+        cloudBadge: "Keine Cloud",
+        statusListening: "Bereit",
+        statusPaused: "Verbindung pausiert",
+        statusLinkCopied: "Link kopiert",
+        statusFolderOpened: "Ordner geöffnet",
+        statusQrActive: "Neuer QR aktiv",
+        statusTextCopied: "Text kopiert",
+        scanTitle: "Mit dem iPhone scannen",
+        scanInstructions: "Kamera -> Code erfassen -> Link öffnen",
+        qrAlt: "QR-Code zum Öffnen von WiFi Drop auf dem iPhone",
+        qrRegenerated: "QR erneuert",
+        copy: "Kopieren",
+        copied: "Kopiert",
+        regenerateQr: "QR erneuern",
+        validWhileOpen: "Gültig, solange WiFi Drop geöffnet ist",
+        localOnlyTitle: "Nur lokales Netzwerk",
+        localOnlyBody: "Die Übertragung läuft zwischen iPhone und PC im selben Wi-Fi. Kein externer Server, kein Konto.",
+        receivedTitle: "Empfangen",
+        openFolder: "Ordner öffnen",
+        open: "Öffnen",
+        noItems: "Keine Elemente",
+        oneItem: "1 Element",
+        manyItems: "{count} Elemente",
+        emptyTitle: "Keine Elemente",
+        emptyBody: "Scanne den QR-Code mit der iPhone-Kamera: alles Gesendete erscheint hier.",
+        textMeta: "Text",
+        safariLabel: "Lokales WiFi Drop",
+        sendTitle: "An PC senden",
+        connected: "Verbunden",
+        sendType: "Sendetyp",
+        tabText: "Text",
+        tabFile: "Datei",
+        textLabel: "Text",
+        textPlaceholder: "Text hier einfügen",
+        textHelper: "Erscheint auf dem PC und kann kopiert werden.",
+        sendText: "Text senden",
+        sending: "Senden...",
+        textEmpty: "Schreibe oder füge zuerst etwas ein.",
+        textSending: "Text wird gesendet...",
+        textSendFailed: "Text konnte nicht gesendet werden.",
+        textSent: "Text an den PC gesendet.",
+        chooseFiles: "Fotos oder Dateien wählen",
+        fileWarning: "Nur ausgewählte Dateien werden gesendet. Text im Text-Tab bleibt auf dem Telefon.",
+        sendFile: "Datei senden",
+        sendOneFile: "1 Datei senden",
+        sendManyFiles: "{count} Dateien senden",
+        chooseAtLeastOne: "Wähle mindestens eine Datei.",
+        uploadSending: "Senden...",
+        uploadFailed: "Senden fehlgeschlagen.",
+        filesSent: "Dateien an den PC gesendet.",
+        remove: "Entfernen",
+        removeFile: "{name} entfernen",
+        ready: "Bereit",
+        privateLink: "Privater Link",
+        expiredTitle: "Ungültiger QR",
+        expiredBody: "Dieser Link ist abgelaufen. Erneuere den QR im Dashboard auf dem PC."
+      }
+    },
+    pt: {
+      name: "Português",
+      strings: {
+        appSubtitle: "Transferência local",
+        cloudBadge: "Sem nuvem",
+        statusListening: "Aguardando",
+        statusPaused: "Conexão pausada",
+        statusLinkCopied: "Link copiado",
+        statusFolderOpened: "Pasta aberta",
+        statusQrActive: "Novo QR ativo",
+        statusTextCopied: "Texto copiado",
+        scanTitle: "Escaneie com o iPhone",
+        scanInstructions: "Câmera -> enquadre o código -> abra o link",
+        qrAlt: "Código QR para abrir o WiFi Drop no iPhone",
+        qrRegenerated: "QR regenerado",
+        copy: "Copiar",
+        copied: "Copiado",
+        regenerateQr: "Regenerar QR",
+        validWhileOpen: "Válido enquanto o WiFi Drop estiver aberto",
+        localOnlyTitle: "Somente rede local",
+        localOnlyBody: "A transferência acontece entre iPhone e PC na mesma Wi-Fi. Sem servidor externo, sem conta.",
+        receivedTitle: "Recebidos",
+        openFolder: "Abrir pasta",
+        open: "Abrir",
+        noItems: "Nenhum item",
+        oneItem: "1 item",
+        manyItems: "{count} itens",
+        emptyTitle: "Nenhum item",
+        emptyBody: "Escaneie o QR com a câmera do iPhone: tudo que você enviar aparece aqui.",
+        textMeta: "Texto",
+        safariLabel: "WiFi Drop local",
+        sendTitle: "Enviar ao PC",
+        connected: "Conectado",
+        sendType: "Tipo de envio",
+        tabText: "Texto",
+        tabFile: "Arquivo",
+        textLabel: "Texto",
+        textPlaceholder: "Cole o texto aqui",
+        textHelper: "Ele aparece no PC, pronto para copiar.",
+        sendText: "Enviar texto",
+        sending: "Enviando...",
+        textEmpty: "Escreva ou cole algo primeiro.",
+        textSending: "Enviando texto...",
+        textSendFailed: "Não foi possível enviar o texto.",
+        textSent: "Texto enviado ao PC.",
+        chooseFiles: "Escolher fotos ou arquivos",
+        fileWarning: "Só os arquivos selecionados são enviados. O texto escrito na aba Texto fica no telefone.",
+        sendFile: "Enviar arquivo",
+        sendOneFile: "Enviar 1 arquivo",
+        sendManyFiles: "Enviar {count} arquivos",
+        chooseAtLeastOne: "Escolha pelo menos um arquivo.",
+        uploadSending: "Enviando...",
+        uploadFailed: "Falha no envio.",
+        filesSent: "Arquivos enviados ao PC.",
+        remove: "Remover",
+        removeFile: "Remover {name}",
+        ready: "Pronto",
+        privateLink: "Link privado",
+        expiredTitle: "QR inválido",
+        expiredBody: "Este link expirou. Regenere o QR pelo painel no PC."
+      }
+    },
+    zh: {
+      name: "中文",
+      strings: {
+        appSubtitle: "本地传输",
+        cloudBadge: "无云端",
+        statusListening: "正在等待",
+        statusPaused: "连接已暂停",
+        statusLinkCopied: "链接已复制",
+        statusFolderOpened: "文件夹已打开",
+        statusQrActive: "新二维码已启用",
+        statusTextCopied: "文本已复制",
+        scanTitle: "用 iPhone 扫描",
+        scanInstructions: "相机 -> 对准二维码 -> 打开链接",
+        qrAlt: "在 iPhone 上打开 WiFi Drop 的二维码",
+        qrRegenerated: "二维码已更新",
+        copy: "复制",
+        copied: "已复制",
+        regenerateQr: "更新二维码",
+        validWhileOpen: "WiFi Drop 保持打开时有效",
+        localOnlyTitle: "仅本地网络",
+        localOnlyBody: "传输只在同一 Wi-Fi 下的 iPhone 和 PC 之间进行。没有外部服务器，也不需要账号。",
+        receivedTitle: "已接收",
+        openFolder: "打开文件夹",
+        open: "打开",
+        noItems: "暂无项目",
+        oneItem: "1 个项目",
+        manyItems: "{count} 个项目",
+        emptyTitle: "暂无项目",
+        emptyBody: "用 iPhone 相机扫描二维码：发送的内容会显示在这里。",
+        textMeta: "文本",
+        safariLabel: "本地 WiFi Drop",
+        sendTitle: "发送到 PC",
+        connected: "已连接",
+        sendType: "发送类型",
+        tabText: "文本",
+        tabFile: "文件",
+        textLabel: "文本",
+        textPlaceholder: "在这里粘贴文本",
+        textHelper: "内容会显示在 PC 上，可直接复制。",
+        sendText: "发送文本",
+        sending: "发送中...",
+        textEmpty: "请先输入或粘贴内容。",
+        textSending: "正在发送文本...",
+        textSendFailed: "无法发送文本。",
+        textSent: "文本已发送到 PC。",
+        chooseFiles: "选择照片或文件",
+        fileWarning: "只会发送已选择的文件。文本标签中的内容会留在手机上。",
+        sendFile: "发送文件",
+        sendOneFile: "发送 1 个文件",
+        sendManyFiles: "发送 {count} 个文件",
+        chooseAtLeastOne: "请至少选择一个文件。",
+        uploadSending: "发送中...",
+        uploadFailed: "发送失败。",
+        filesSent: "文件已发送到 PC。",
+        remove: "移除",
+        removeFile: "移除 {name}",
+        ready: "就绪",
+        privateLink: "私密链接",
+        expiredTitle: "二维码无效",
+        expiredBody: "此链接已过期。请在 PC 仪表盘中重新生成二维码。"
+      }
+    },
+    ja: {
+      name: "日本語",
+      strings: {
+        appSubtitle: "ローカル転送",
+        cloudBadge: "クラウドなし",
+        statusListening: "待機中",
+        statusPaused: "接続が一時停止中",
+        statusLinkCopied: "リンクをコピーしました",
+        statusFolderOpened: "フォルダを開きました",
+        statusQrActive: "新しいQRが有効です",
+        statusTextCopied: "テキストをコピーしました",
+        scanTitle: "iPhoneでスキャン",
+        scanInstructions: "カメラ -> コードを写す -> リンクを開く",
+        qrAlt: "iPhoneでWiFi Dropを開くためのQRコード",
+        qrRegenerated: "QRを再生成しました",
+        copy: "コピー",
+        copied: "コピー済み",
+        regenerateQr: "QRを再生成",
+        validWhileOpen: "WiFi Dropを開いている間だけ有効",
+        localOnlyTitle: "ローカルネットワークのみ",
+        localOnlyBody: "転送は同じWi-Fi上のiPhoneとPC間で行われます。外部サーバーもアカウントも不要です。",
+        receivedTitle: "受信済み",
+        openFolder: "フォルダを開く",
+        open: "開く",
+        noItems: "項目なし",
+        oneItem: "1件",
+        manyItems: "{count}件",
+        emptyTitle: "項目なし",
+        emptyBody: "iPhoneのカメラでQRをスキャンすると、送信したものがここに表示されます。",
+        textMeta: "テキスト",
+        safariLabel: "ローカルWiFi Drop",
+        sendTitle: "PCへ送信",
+        connected: "接続済み",
+        sendType: "送信タイプ",
+        tabText: "テキスト",
+        tabFile: "ファイル",
+        textLabel: "テキスト",
+        textPlaceholder: "ここにテキストを貼り付け",
+        textHelper: "PCに表示され、すぐコピーできます。",
+        sendText: "テキストを送信",
+        sending: "送信中...",
+        textEmpty: "先に入力または貼り付けてください。",
+        textSending: "テキスト送信中...",
+        textSendFailed: "テキストを送信できませんでした。",
+        textSent: "テキストをPCへ送信しました。",
+        chooseFiles: "写真またはファイルを選択",
+        fileWarning: "選択したファイルだけ送信されます。テキストタブの内容は電話に残ります。",
+        sendFile: "ファイルを送信",
+        sendOneFile: "1件のファイルを送信",
+        sendManyFiles: "{count}件のファイルを送信",
+        chooseAtLeastOne: "ファイルを1つ以上選択してください。",
+        uploadSending: "送信中...",
+        uploadFailed: "送信に失敗しました。",
+        filesSent: "ファイルをPCへ送信しました。",
+        remove: "削除",
+        removeFile: "{name}を削除",
+        ready: "準備完了",
+        privateLink: "プライベートリンク",
+        expiredTitle: "無効なQR",
+        expiredBody: "このリンクは期限切れです。PCのダッシュボードからQRを再生成してください。"
+      }
+    },
+    ko: {
+      name: "한국어",
+      strings: {
+        appSubtitle: "로컬 전송",
+        cloudBadge: "클라우드 없음",
+        statusListening: "대기 중",
+        statusPaused: "연결 일시 중지",
+        statusLinkCopied: "링크 복사됨",
+        statusFolderOpened: "폴더 열림",
+        statusQrActive: "새 QR 활성화됨",
+        statusTextCopied: "텍스트 복사됨",
+        scanTitle: "iPhone으로 스캔",
+        scanInstructions: "카메라 -> 코드 맞추기 -> 링크 열기",
+        qrAlt: "iPhone에서 WiFi Drop을 여는 QR 코드",
+        qrRegenerated: "QR 재생성됨",
+        copy: "복사",
+        copied: "복사됨",
+        regenerateQr: "QR 재생성",
+        validWhileOpen: "WiFi Drop이 열려 있는 동안 유효",
+        localOnlyTitle: "로컬 네트워크 전용",
+        localOnlyBody: "전송은 같은 Wi-Fi에 있는 iPhone과 PC 사이에서만 이루어집니다. 외부 서버도 계정도 없습니다.",
+        receivedTitle: "받은 항목",
+        openFolder: "폴더 열기",
+        open: "열기",
+        noItems: "항목 없음",
+        oneItem: "항목 1개",
+        manyItems: "항목 {count}개",
+        emptyTitle: "항목 없음",
+        emptyBody: "iPhone 카메라로 QR을 스캔하면 보낸 내용이 여기에 표시됩니다.",
+        textMeta: "텍스트",
+        safariLabel: "로컬 WiFi Drop",
+        sendTitle: "PC로 보내기",
+        connected: "연결됨",
+        sendType: "전송 유형",
+        tabText: "텍스트",
+        tabFile: "파일",
+        textLabel: "텍스트",
+        textPlaceholder: "여기에 텍스트 붙여넣기",
+        textHelper: "PC에 표시되어 바로 복사할 수 있습니다.",
+        sendText: "텍스트 보내기",
+        sending: "보내는 중...",
+        textEmpty: "먼저 내용을 쓰거나 붙여넣으세요.",
+        textSending: "텍스트 보내는 중...",
+        textSendFailed: "텍스트를 보내지 못했습니다.",
+        textSent: "텍스트를 PC로 보냈습니다.",
+        chooseFiles: "사진 또는 파일 선택",
+        fileWarning: "선택한 파일만 전송됩니다. 텍스트 탭의 내용은 휴대폰에 남습니다.",
+        sendFile: "파일 보내기",
+        sendOneFile: "파일 1개 보내기",
+        sendManyFiles: "파일 {count}개 보내기",
+        chooseAtLeastOne: "파일을 하나 이상 선택하세요.",
+        uploadSending: "보내는 중...",
+        uploadFailed: "전송 실패.",
+        filesSent: "파일을 PC로 보냈습니다.",
+        remove: "삭제",
+        removeFile: "{name} 삭제",
+        ready: "준비됨",
+        privateLink: "비공개 링크",
+        expiredTitle: "유효하지 않은 QR",
+        expiredBody: "이 링크는 만료되었습니다. PC 대시보드에서 QR을 다시 생성하세요."
+      }
+    }
+  };
+
+  function readSavedLanguage() {
+    try {
+      return window.localStorage.getItem("wifi-drop-language");
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function saveLanguage(language) {
+    try {
+      window.localStorage.setItem("wifi-drop-language", language);
+    } catch (_) {
+      // Safari private browsing can block storage; the page still works for the session.
+    }
+  }
+
+  function preferredLanguage() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("lang")
+      || readSavedLanguage()
+      || navigator.language
+      || "it";
+  }
+
+  function normalizeLanguage(value) {
+    const clean = String(value || "").toLowerCase();
+    if (languages[clean]) return clean;
+    const base = clean.split("-")[0];
+    if (languages[base]) return base;
+    return "it";
+  }
+
+  let currentLanguage = normalizeLanguage(preferredLanguage());
+
+  function t(key, params = {}) {
+    const dictionary = languages[currentLanguage]?.strings || languages.it.strings;
+    const fallback = languages.en.strings[key] || languages.it.strings[key] || key;
+    return String(dictionary[key] || fallback).replace(/\{(\w+)\}/g, (_, name) => {
+      return params[name] == null ? "" : String(params[name]);
+    });
+  }
+
+  function applyTranslations() {
+    document.documentElement.lang = currentLanguage;
+
+    for (const node of document.querySelectorAll("[data-i18n]")) {
+      node.textContent = t(node.dataset.i18n);
+    }
+
+    for (const node of document.querySelectorAll("[data-i18n-placeholder]")) {
+      node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+    }
+
+    for (const node of document.querySelectorAll("[data-i18n-aria-label]")) {
+      node.setAttribute("aria-label", t(node.dataset.i18nAriaLabel));
+    }
+
+    for (const node of document.querySelectorAll("[data-i18n-alt]")) {
+      node.setAttribute("alt", t(node.dataset.i18nAlt));
+    }
+
+    for (const select of document.querySelectorAll("#language-select")) {
+      if (!select.options.length) {
+        for (const [code, language] of Object.entries(languages)) {
+          const option = document.createElement("option");
+          option.value = code;
+          option.textContent = language.name;
+          select.appendChild(option);
+        }
+      }
+
+      select.value = currentLanguage;
+      select.setAttribute("aria-label", "Language");
+
+      if (!select.dataset.i18nReady) {
+        select.dataset.i18nReady = "true";
+        select.addEventListener("change", () => setLanguage(select.value));
+      }
+    }
+  }
+
+  function setLanguage(language) {
+    currentLanguage = normalizeLanguage(language);
+    saveLanguage(currentLanguage);
+    applyTranslations();
+    window.dispatchEvent(new CustomEvent("wifi-drop:language-change", {
+      detail: { language: currentLanguage }
+    }));
+  }
+
+  window.WiFiDropI18n = {
+    languages,
+    get language() {
+      return currentLanguage;
+    },
+    t,
+    setLanguage,
+    init(onChange) {
+      applyTranslations();
+      if (typeof onChange === "function") {
+        window.addEventListener("wifi-drop:language-change", onChange);
+      }
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyTranslations);
+  } else {
+    applyTranslations();
+  }
+})();

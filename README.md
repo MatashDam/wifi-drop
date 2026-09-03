@@ -13,6 +13,7 @@ No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code
 - Send text from iPhone Safari to a Windows PC.
 - Send photos and files through the browser file picker.
 - Scan a temporary QR code generated at app launch.
+- Use the UI in Italian, English, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean.
 - Keep transfers on the local network.
 - Save received files in `Documents\WiFi Drop`.
 - Open the received folder from the desktop app.
@@ -32,6 +33,8 @@ The iPhone opens the drop link in Safari. The mobile page has two separate modes
 
 - `Text`: sends only the text field.
 - `File`: sends only selected files. Text left in the text tab is not included.
+
+The interface follows the browser or system language automatically, and both the Windows dashboard and iPhone page include a compact language selector.
 
 ## Install
 

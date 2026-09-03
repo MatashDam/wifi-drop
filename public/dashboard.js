@@ -1,8 +1,10 @@
 const state = {
   items: window.WIFI_DROP.items || [],
-  adminToken: window.WIFI_DROP.adminToken
+  adminToken: window.WIFI_DROP.adminToken,
+  statusKey: "statusListening"
 };
 
+const i18n = window.WiFiDropI18n;
 const feed = document.querySelector("#feed");
 const statusEl = document.querySelector("#status");
 const itemCount = document.querySelector("#item-count");
@@ -13,21 +15,25 @@ const copyLink = document.querySelector("#copy-link");
 const regenerate = document.querySelector("#regenerate");
 const openFolder = document.querySelector("#open-folder");
 
+i18n.init(() => {
+  render();
+  setStatus(state.statusKey);
+});
 render();
 window.setInterval(refreshItems, 1500);
 
 copyLink.addEventListener("click", async () => {
   await navigator.clipboard.writeText(urlEl.textContent);
-  copyLink.textContent = "Copiato";
-  flash("Link copiato");
+  copyLink.textContent = t("copied");
+  flash("statusLinkCopied");
   window.setTimeout(() => {
-    copyLink.textContent = "Copia";
+    copyLink.textContent = t("copy");
   }, 1800);
 });
 
 openFolder.addEventListener("click", async () => {
   await fetch(`/api/open-folder?admin=${encodeURIComponent(state.adminToken)}`, { method: "POST" });
-  flash("Cartella aperta");
+  flash("statusFolderOpened");
 });
 
 regenerate.addEventListener("click", async () => {
@@ -38,7 +44,7 @@ regenerate.addEventListener("click", async () => {
     qrEl.src = data.qr;
     urlEl.textContent = data.dropUrl;
     showQrBadge();
-    flash("Nuovo QR attivo");
+    flash("statusQrActive");
   } finally {
     regenerate.disabled = false;
   }
@@ -46,34 +52,34 @@ regenerate.addEventListener("click", async () => {
 
 async function refreshItems() {
   const res = await fetch(`/api/items?admin=${encodeURIComponent(state.adminToken)}`);
-  if (!res.ok) return setStatus("Connessione in pausa");
+  if (!res.ok) return setStatus("statusPaused");
   const data = await res.json();
   const latest = data.items || [];
   if (JSON.stringify(latest) !== JSON.stringify(state.items)) {
     state.items = latest;
     render();
   }
-  setStatus("In ascolto");
+  setStatus("statusListening");
 }
 
 function render() {
   itemCount.textContent = state.items.length === 0
-    ? "Nessun elemento"
-    : `${state.items.length} ${state.items.length === 1 ? "elemento" : "elementi"}`;
+    ? t("noItems")
+    : t(state.items.length === 1 ? "oneItem" : "manyItems", { count: state.items.length });
 
   if (!state.items.length) {
     feed.innerHTML = `
       <article class="empty-state">
         <span class="empty-icon" aria-hidden="true"></span>
-        <strong>Nessun elemento</strong>
-        <p>Scansiona il QR con la fotocamera dell'iPhone: quello che invii appare qui.</p>
+        <strong>${escapeHtml(t("emptyTitle"))}</strong>
+        <p>${escapeHtml(t("emptyBody"))}</p>
       </article>
     `;
     return;
   }
 
   feed.innerHTML = state.items.map((item) => {
-    const time = new Date(item.createdAt).toLocaleString("it-IT", {
+    const time = new Date(item.createdAt).toLocaleString(localeForCurrentLanguage(), {
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",
@@ -86,9 +92,9 @@ function render() {
           <span class="row-thumb text-thumb">TXT</span>
           <div class="row-content">
             <strong>"${escapeHtml(item.text)}"</strong>
-            <span>Testo · ${time} · ${escapeHtml(item.source || "iPhone")}</span>
+            <span>${escapeHtml(t("textMeta"))} · ${time} · ${escapeHtml(item.source || "iPhone")}</span>
           </div>
-          <button class="small-button copy-text" data-text="${escapeAttr(item.text)}" type="button">Copia</button>
+          <button class="small-button copy-text" data-text="${escapeAttr(item.text)}" type="button">${escapeHtml(t("copy"))}</button>
         </article>
       `;
     }
@@ -102,7 +108,7 @@ function render() {
           <strong>${escapeHtml(item.originalName)}</strong>
           <span>${formatBytes(item.size)} · ${time} · ${escapeHtml(item.source || "iPhone")}</span>
         </div>
-        <a class="small-button download" href="/files/${item.id}?admin=${encodeURIComponent(state.adminToken)}">Apri</a>
+        <a class="small-button download" href="/files/${item.id}?admin=${encodeURIComponent(state.adminToken)}">${escapeHtml(t("open"))}</a>
       </article>
     `;
   }).join("");
@@ -110,10 +116,10 @@ function render() {
   for (const button of feed.querySelectorAll(".copy-text")) {
     button.addEventListener("click", async () => {
       await navigator.clipboard.writeText(button.dataset.text || "");
-      button.textContent = "Copiato";
-      flash("Testo copiato");
+      button.textContent = t("copied");
+      flash("statusTextCopied");
       window.setTimeout(() => {
-        button.textContent = "Copia";
+        button.textContent = t("copy");
       }, 1600);
     });
   }
@@ -127,16 +133,17 @@ function showQrBadge() {
   }, 2600);
 }
 
-function flash(message) {
-  setStatus(message);
+function flash(key) {
+  setStatus(key);
   window.clearTimeout(flash.timer);
   flash.timer = window.setTimeout(() => {
-    setStatus("In ascolto");
+    setStatus("statusListening");
   }, 1800);
 }
 
-function setStatus(message) {
-  statusEl.innerHTML = `<span class="pulse-dot" aria-hidden="true"></span><span>${escapeHtml(message)}</span>`;
+function setStatus(key) {
+  state.statusKey = key;
+  statusEl.innerHTML = `<span class="pulse-dot" aria-hidden="true"></span><span>${escapeHtml(t(key))}</span>`;
 }
 
 function extensionLabel(name) {
@@ -155,6 +162,24 @@ function formatBytes(bytes) {
     unit += 1;
   }
   return `${size.toFixed(size >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function localeForCurrentLanguage() {
+  return {
+    it: "it-IT",
+    en: "en-US",
+    es: "es-ES",
+    fr: "fr-FR",
+    de: "de-DE",
+    pt: "pt-PT",
+    zh: "zh-CN",
+    ja: "ja-JP",
+    ko: "ko-KR"
+  }[i18n.language] || "it-IT";
+}
+
+function t(key, params) {
+  return i18n.t(key, params);
 }
 
 function escapeHtml(value) {

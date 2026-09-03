@@ -259,52 +259,55 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
             <span class="brand-icon" aria-hidden="true"></span>
             <div>
               <strong>WiFi Drop</strong>
-              <p>Trasferimento locale</p>
+              <p data-i18n="appSubtitle">Trasferimento locale</p>
             </div>
           </div>
-          <span class="privacy-chip">Niente cloud</span>
+          <div class="app-tools">
+            <select id="language-select" class="language-select" aria-label="Lingua"></select>
+            <span class="privacy-chip" data-i18n="cloudBadge">Niente cloud</span>
+          </div>
         </header>
 
         <div class="desktop-layout">
           <section class="pairing-pane">
             <div id="status" class="listen-pill">
               <span class="pulse-dot" aria-hidden="true"></span>
-              <span>In ascolto</span>
+              <span data-i18n="statusListening">In ascolto</span>
             </div>
 
             <div class="qr-title">
-              <h1>Scansiona con l'iPhone</h1>
-              <p>Fotocamera -> inquadra il codice -> apri il link</p>
+              <h1 data-i18n="scanTitle">Scansiona con l'iPhone</h1>
+              <p data-i18n="scanInstructions">Fotocamera -> inquadra il codice -> apri il link</p>
             </div>
 
             <div class="qr-frame">
-              <img id="qr" src="{qr}" alt="QR code per aprire WiFi Drop su iPhone">
-              <span id="qr-badge" class="qr-badge" hidden>QR rigenerato</span>
+              <img id="qr" src="{qr}" alt="QR code per aprire WiFi Drop su iPhone" data-i18n-alt="qrAlt">
+              <span id="qr-badge" class="qr-badge" hidden data-i18n="qrRegenerated">QR rigenerato</span>
             </div>
 
             <div class="link-box">
               <code id="drop-url">{drop_url}</code>
-              <button id="copy-link" class="small-button" type="button">Copia</button>
+              <button id="copy-link" class="small-button" type="button" data-i18n="copy">Copia</button>
             </div>
 
             <div class="qr-actions">
-              <button id="regenerate" class="secondary small-button" type="button">Rigenera QR</button>
-              <span>Valido finche WiFi Drop resta aperto</span>
+              <button id="regenerate" class="secondary small-button" type="button" data-i18n="regenerateQr">Rigenera QR</button>
+              <span data-i18n="validWhileOpen">Valido finche WiFi Drop resta aperto</span>
             </div>
 
             <div class="local-note">
-              <strong>Solo rete locale</strong>
-              <p>Il trasferimento avviene tra iPhone e PC sulla stessa Wi-Fi. Nessun server esterno, nessun account.</p>
+              <strong data-i18n="localOnlyTitle">Solo rete locale</strong>
+              <p data-i18n="localOnlyBody">Il trasferimento avviene tra iPhone e PC sulla stessa Wi-Fi. Nessun server esterno, nessun account.</p>
             </div>
           </section>
 
           <section class="received-pane">
             <header class="received-header">
               <div>
-                <h2>Ricevuti</h2>
-                <p id="item-count">Nessun elemento</p>
+                <h2 data-i18n="receivedTitle">Ricevuti</h2>
+                <p id="item-count" data-i18n="noItems">Nessun elemento</p>
               </div>
-              <button id="open-folder" class="small-button" type="button">Apri cartella</button>
+              <button id="open-folder" class="small-button" type="button" data-i18n="openFolder">Apri cartella</button>
             </header>
 
             <p class="path-line">Documenti\\WiFi Drop</p>
@@ -314,6 +317,7 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
       </section>
     </main>
     <script>window.WIFI_DROP = {boot_json};</script>
+    <script src="/public/i18n.js"></script>
     <script src="/public/dashboard.js"></script>
 "#,
             qr = qr,
@@ -341,48 +345,52 @@ async fn drop_page(
         <header class="safari-bar">
           <div class="address-pill">
             <span class="lock-dot" aria-hidden="true"></span>
-            <span>WiFi Drop locale</span>
+            <span data-i18n="safariLabel">WiFi Drop locale</span>
           </div>
         </header>
 
         <header class="phone-title">
           <div>
             <p class="caption">WiFi Drop</p>
-            <h1>Invia al PC</h1>
+            <h1 data-i18n="sendTitle">Invia al PC</h1>
           </div>
-          <span class="online-pill"><span class="pulse-dot" aria-hidden="true"></span>Connesso</span>
+          <div class="phone-title-actions">
+            <select id="language-select" class="language-select compact" aria-label="Lingua"></select>
+            <span class="online-pill"><span class="pulse-dot" aria-hidden="true"></span><span data-i18n="connected">Connesso</span></span>
+          </div>
         </header>
 
-        <div class="segmented" role="tablist" aria-label="Tipo di invio">
-          <button class="segment active" type="button" data-mode="text" role="tab" aria-selected="true">Testo</button>
-          <button class="segment" type="button" data-mode="files" role="tab" aria-selected="false">File</button>
+        <div class="segmented" role="tablist" aria-label="Tipo di invio" data-i18n-aria-label="sendType">
+          <button class="segment active" type="button" data-mode="text" role="tab" aria-selected="true" data-i18n="tabText">Testo</button>
+          <button class="segment" type="button" data-mode="files" role="tab" aria-selected="false" data-i18n="tabFile">File</button>
         </div>
 
         <form id="text-form" class="mode-panel" data-panel="text">
-          <label for="text">Testo</label>
-          <textarea id="text" name="text" rows="8" placeholder="Incolla qui il testo"></textarea>
-          <p class="helper">Appare sul PC, pronto da copiare.</p>
-          <button id="send-text" class="phone-cta" type="submit">Invia testo</button>
+          <label for="text" data-i18n="textLabel">Testo</label>
+          <textarea id="text" name="text" rows="8" placeholder="Incolla qui il testo" data-i18n-placeholder="textPlaceholder"></textarea>
+          <p class="helper" data-i18n="textHelper">Appare sul PC, pronto da copiare.</p>
+          <button id="send-text" class="phone-cta" type="submit" data-i18n="sendText">Invia testo</button>
         </form>
 
         <form id="file-form" class="mode-panel" data-panel="files" hidden>
           <div class="ios-list">
             <label for="files" class="ios-row">
               <span class="row-icon photo-icon" aria-hidden="true"></span>
-              <span>Scegli foto o file</span>
+              <span data-i18n="chooseFiles">Scegli foto o file</span>
               <span class="chevron" aria-hidden="true">></span>
             </label>
           </div>
           <input id="files" name="files" class="visually-hidden file-source" type="file" multiple>
           <div id="selected-files" class="selected-files" hidden></div>
-          <p class="warning-note">Invii solo i file selezionati. Il testo scritto in Testo resta sul telefono.</p>
-          <button id="send-files" class="phone-cta" type="submit">Invia file</button>
+          <p class="warning-note" data-i18n="fileWarning">Invii solo i file selezionati. Il testo scritto in Testo resta sul telefono.</p>
+          <button id="send-files" class="phone-cta" type="submit" data-i18n="sendFile">Invia file</button>
         </form>
 
         <p id="mobile-status" class="toast-pill" hidden>Pronto</p>
       </section>
     </main>
     <script>window.DROP_TOKEN = "{token}";</script>
+    <script src="/public/i18n.js"></script>
     <script src="/public/drop.js"></script>
 "#,
             token = escape_html(&token)
@@ -594,6 +602,11 @@ async fn asset(AxumPath(asset): AxumPath<String>) -> Response {
             include_str!("../../public/styles.css"),
         )
             .into_response(),
+        "i18n.js" => (
+            [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
+            include_str!("../../public/i18n.js"),
+        )
+            .into_response(),
         "dashboard.js" => (
             [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
             include_str!("../../public/dashboard.js"),
@@ -632,11 +645,12 @@ fn locked_page() -> &'static str {
         <header class="phone-title">
           <div>
             <p class="caption">WiFi Drop</p>
-            <h1>Link privato</h1>
+            <h1 data-i18n="privateLink">Link privato</h1>
           </div>
         </header>
       </section>
     </main>
+    <script src="/public/i18n.js"></script>
 "#
 }
 
@@ -647,14 +661,15 @@ fn expired_page() -> &'static str {
         <header class="phone-title">
           <div>
             <p class="caption">WiFi Drop</p>
-            <h1>QR non valido</h1>
+            <h1 data-i18n="expiredTitle">QR non valido</h1>
           </div>
         </header>
         <div class="mode-panel">
-          <p class="helper">Questo link e scaduto. Rigenera il QR dalla dashboard sul PC.</p>
+          <p class="helper" data-i18n="expiredBody">Questo link e scaduto. Rigenera il QR dalla dashboard sul PC.</p>
         </div>
       </section>
     </main>
+    <script src="/public/i18n.js"></script>
 "#
 }
 

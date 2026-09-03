@@ -9,8 +9,14 @@ const selectedFilesEl = document.querySelector("#selected-files");
 const fileSources = document.querySelectorAll(".file-source");
 const segments = document.querySelectorAll(".segment");
 const panels = document.querySelectorAll(".mode-panel");
+const i18n = window.WiFiDropI18n;
 
 let selectedFiles = [];
+
+i18n.init(() => {
+  updateTextButton();
+  renderSelectedFiles();
+});
 
 for (const segment of segments) {
   segment.addEventListener("click", () => setMode(segment.dataset.mode));
@@ -38,11 +44,11 @@ renderSelectedFiles();
 textForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = textArea.value.trim();
-  if (!text) return showToast("Scrivi o incolla qualcosa prima.", true);
+  if (!text) return showToast(t("textEmpty"), true);
 
   sendText.disabled = true;
-  sendText.textContent = "Invio...";
-  showToast("Invio testo...");
+  sendText.textContent = t("sending");
+  showToast(t("textSending"));
   const res = await fetch(`/api/text/${encodeURIComponent(token)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -50,23 +56,23 @@ textForm.addEventListener("submit", async (event) => {
   });
 
   sendText.disabled = false;
-  sendText.textContent = "Invia testo";
-  if (!res.ok) return showToast("Non sono riuscito a inviare il testo.", true);
+  sendText.textContent = t("sendText");
+  if (!res.ok) return showToast(t("textSendFailed"), true);
   textArea.value = "";
   updateTextButton();
-  showToast("Testo inviato al PC.");
+  showToast(t("textSent"));
 });
 
 fileForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (selectedFiles.length === 0) return showToast("Scegli almeno un file.", true);
+  if (selectedFiles.length === 0) return showToast(t("chooseAtLeastOne"), true);
 
   const form = new FormData();
   for (const file of selectedFiles) form.append("files", file);
 
   sendFiles.disabled = true;
-  sendFiles.textContent = "Invio...";
-  showToast("Invio in corso...");
+  sendFiles.textContent = t("sending");
+  showToast(t("uploadSending"));
   const res = await fetch(`/api/upload/${encodeURIComponent(token)}`, {
     method: "POST",
     body: form
@@ -75,12 +81,12 @@ fileForm.addEventListener("submit", async (event) => {
   sendFiles.disabled = false;
   if (!res.ok) {
     updateFilesButton();
-    return showToast("Invio non riuscito.", true);
+    return showToast(t("uploadFailed"), true);
   }
 
   selectedFiles = [];
   renderSelectedFiles();
-  showToast("File inviati al PC.");
+  showToast(t("filesSent"));
 });
 
 function setMode(mode) {
@@ -104,7 +110,7 @@ function renderSelectedFiles() {
         <strong>${escapeHtml(file.name)}</strong>
         <small>${formatBytes(file.size)}</small>
       </span>
-      <button type="button" data-remove="${index}" aria-label="Rimuovi ${escapeAttr(file.name)}">Rimuovi</button>
+      <button type="button" data-remove="${index}" aria-label="${escapeAttr(t("removeFile", { name: file.name }))}">${escapeHtml(t("remove"))}</button>
     </div>
   `).join("");
   updateFilesButton();
@@ -116,9 +122,9 @@ function updateTextButton() {
 
 function updateFilesButton() {
   sendFiles.disabled = selectedFiles.length === 0;
-  if (selectedFiles.length === 0) sendFiles.textContent = "Invia file";
-  else if (selectedFiles.length === 1) sendFiles.textContent = "Invia 1 file";
-  else sendFiles.textContent = `Invia ${selectedFiles.length} file`;
+  if (selectedFiles.length === 0) sendFiles.textContent = t("sendFile");
+  else if (selectedFiles.length === 1) sendFiles.textContent = t("sendOneFile");
+  else sendFiles.textContent = t("sendManyFiles", { count: selectedFiles.length });
 }
 
 function showToast(message, isError = false) {
@@ -154,4 +160,8 @@ function escapeHtml(value) {
 
 function escapeAttr(value) {
   return escapeHtml(value).replace(/'/g, "&#39;");
+}
+
+function t(key, params) {
+  return i18n.t(key, params);
 }
