@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WiFi Drop",
+  "version": "0.1.0",
+  "identifier": "local.wifidrop.desktop",
+  "build": {
+    "frontendDist": "../public"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "WiFi Drop",
+    "copyright": "Copyright 2026 WiFi Drop",
+    "category": "Utility",
+    "shortDescription": "Send text and files from iPhone to Windows over local Wi-Fi.",
+    "longDescription": "WiFi Drop creates a private local link and QR code so an iPhone can send text, photos, and files to a Windows PC on the same Wi-Fi network."
+  }
+}
