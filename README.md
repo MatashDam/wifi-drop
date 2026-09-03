@@ -6,8 +6,8 @@ WiFi Drop is a lightweight Windows app for sending text, photos, and files betwe
 
 No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code with the iPhone camera, and transfer from Safari.
 
-> ### 💾 [**Download WiFi Drop for Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.0_x64-setup.exe)
-> **Latest Version:** [v0.1.0](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.0) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Free & Open Source
+> ### 💾 [**Download WiFi Drop for Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.1_x64-setup.exe)
+> **Latest Version:** [v0.1.1](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.1) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Free & Open Source
 
 ![WiFi Drop desktop screenshot](docs/screenshots/desktop.png)
 
@@ -51,7 +51,7 @@ The interface follows the browser or system language automatically, and both the
 Go to the **[Releases](../../releases)** section on GitHub and download the latest installer:
 
 ```text
-WiFi Drop_0.1.0_x64-setup.exe
+WiFi Drop_0.1.1_x64-setup.exe
 ```
 
 ### 2. Windows SmartScreen Notice
