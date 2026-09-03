@@ -1,8 +1,8 @@
 {
   "name": "wifi-drop-tauri",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
-  "description": "Lightweight local Wi-Fi drop app for Windows and iPhone.",
+  "description": "Lightweight local Wi-Fi transfer app for Windows and iPhone.",
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",

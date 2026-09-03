@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{
+    collections::HashMap,
     fs,
     io::Cursor,
     net::TcpListener,
@@ -40,6 +41,7 @@ struct ServerState {
     outgoing_manifest_path: PathBuf,
     items: Arc<Mutex<Vec<Item>>>,
     outgoing_items: Arc<Mutex<Vec<Item>>>,
+    devices: Arc<Mutex<HashMap<String, DeviceInfo>>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -57,6 +59,16 @@ struct Item {
     source: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DeviceInfo {
+    id: String,
+    name: String,
+    user_agent: Option<String>,
+    last_seen: String,
+    trusted: bool,
+}
+
 #[derive(Deserialize)]
 struct AuthQuery {
     admin: Option<String>,
@@ -65,6 +77,14 @@ struct AuthQuery {
 #[derive(Deserialize)]
 struct TextRequest {
     text: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DeviceHello {
+    id: String,
+    name: Option<String>,
+    user_agent: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -82,12 +102,18 @@ struct DashboardBoot {
     admin_token: String,
     items: Vec<Item>,
     outbox: Vec<Item>,
+    devices: Vec<DeviceInfo>,
     received_dir: String,
 }
 
 #[derive(Serialize)]
 struct ItemsResponse {
     items: Vec<Item>,
+}
+
+#[derive(Serialize)]
+struct DevicesResponse {
+    devices: Vec<DeviceInfo>,
 }
 
 #[derive(Serialize)]
@@ -180,6 +206,7 @@ impl ServerState {
             outgoing_manifest_path,
             items: Arc::new(Mutex::new(items)),
             outgoing_items: Arc::new(Mutex::new(outgoing_items)),
+            devices: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
@@ -239,6 +266,12 @@ impl ServerState {
     fn outgoing_dir(&self) -> PathBuf {
         self.received_dir.join("To iPhone")
     }
+
+    fn device_list(&self) -> Vec<DeviceInfo> {
+        let mut devices: Vec<DeviceInfo> = self.devices.lock().unwrap().values().cloned().collect();
+        devices.sort_by(|left, right| right.last_seen.cmp(&left.last_seen));
+        devices
+    }
 }
 
 fn build_router(state: ServerState) -> Router {
@@ -247,6 +280,8 @@ fn build_router(state: ServerState) -> Router {
         .route("/drop/{token}", get(drop_page))
         .route("/api/items", get(api_items))
         .route("/api/outbox", get(api_outbox))
+        .route("/api/devices", get(api_devices))
+        .route("/api/device/{token}", post(device_hello))
         .route("/api/outbox/text", post(send_text_to_phone))
         .route("/api/outbox/upload", post(upload_files_to_phone))
         .route("/api/phone-outbox/{token}", get(api_outbox_for_phone))
@@ -273,6 +308,7 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
         admin_token: state.admin_token.clone(),
         items,
         outbox,
+        devices: state.device_list(),
         received_dir: state.received_dir.to_string_lossy().to_string(),
     };
     let boot_json = serde_json::to_string(&boot).unwrap_or_else(|_| "{}".to_string());
@@ -339,17 +375,28 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
                 </div>
               </header>
 
+              <section class="nearby-panel">
+                <header>
+                  <h3 data-i18n="nearbyDevicesTitle">Dispositivi vicini</h3>
+                  <p data-i18n="nearbyDevicesHint">Apri il link QR sull'iPhone per vederlo qui.</p>
+                </header>
+                <div id="device-feed" class="device-feed"></div>
+              </section>
+
               <div class="send-controls">
                 <form id="pc-text-form" class="desktop-send-box">
                   <label for="pc-text" data-i18n="pcTextLabel">Testo per iPhone</label>
                   <textarea id="pc-text" class="desktop-textarea" rows="4" placeholder="Scrivi o incolla testo da leggere sul telefono" data-i18n-placeholder="pcTextPlaceholder"></textarea>
-                  <button id="pc-send-text" class="primary small-button" type="submit" data-i18n="sendToIphoneText">Invia testo</button>
+                  <div class="send-actions">
+                    <button id="pc-send-text" class="primary small-button" type="submit" data-i18n="sendToIphoneText">Invia testo</button>
+                    <button id="pc-send-clipboard" class="secondary small-button" type="button" data-i18n="sendClipboard">Invia clipboard</button>
+                  </div>
                 </form>
 
                 <form id="pc-file-form" class="desktop-send-box">
-                  <label for="pc-files" class="desktop-file-button">
+                  <label id="pc-drop-zone" for="pc-files" class="desktop-file-button">
                     <span class="row-icon file-icon" aria-hidden="true"></span>
-                    <span data-i18n="choosePcFiles">Scegli file dal PC</span>
+                    <span data-i18n="pcDropHint">Trascina qui o scegli file dal PC</span>
                   </label>
                   <input id="pc-files" class="visually-hidden" type="file" multiple>
                   <div id="pc-selected-files" class="selected-files" hidden></div>
@@ -489,6 +536,47 @@ async fn api_outbox(Query(query): Query<AuthQuery>, State(state): State<ServerSt
         items: state.outgoing_items.lock().unwrap().clone(),
     })
     .into_response()
+}
+
+async fn api_devices(Query(query): Query<AuthQuery>, State(state): State<ServerState>) -> Response {
+    if !state.is_admin(&query) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    Json(DevicesResponse {
+        devices: state.device_list(),
+    })
+    .into_response()
+}
+
+async fn device_hello(
+    AxumPath(token): AxumPath<String>,
+    State(state): State<ServerState>,
+    Json(payload): Json<DeviceHello>,
+) -> Response {
+    if !state.is_drop_token(&token) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let id = sanitize_filename::sanitize(payload.id.trim());
+    if id.is_empty() {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+
+    let device = DeviceInfo {
+        id: id.clone(),
+        name: payload
+            .name
+            .map(|name| name.trim().to_string())
+            .filter(|name| !name.is_empty())
+            .unwrap_or_else(|| "iPhone".to_string()),
+        user_agent: payload.user_agent,
+        last_seen: Utc::now().to_rfc3339(),
+        trusted: true,
+    };
+
+    state.devices.lock().unwrap().insert(id, device.clone());
+    Json(device).into_response()
 }
 
 async fn api_outbox_for_phone(
@@ -900,22 +988,49 @@ async fn asset(AxumPath(asset): AxumPath<String>) -> Response {
             include_str!("../../public/drop.js"),
         )
             .into_response(),
+        "manifest.webmanifest" => (
+            [(
+                header::CONTENT_TYPE,
+                "application/manifest+json; charset=utf-8",
+            )],
+            include_str!("../../public/manifest.webmanifest"),
+        )
+            .into_response(),
+        "sw.js" => (
+            [(
+                header::CONTENT_TYPE,
+                "application/javascript; charset=utf-8",
+            )],
+            include_str!("../../public/sw.js"),
+        )
+            .into_response(),
+        "icon.svg" => (
+            [(header::CONTENT_TYPE, "image/svg+xml; charset=utf-8")],
+            include_str!("../../public/icon.svg"),
+        )
+            .into_response(),
         _ => StatusCode::NOT_FOUND.into_response(),
     }
 }
 
 fn page(title: &str, body: &str) -> String {
     format!(
-        r#"<!doctype html>
+        r##"<!doctype html>
 <html lang="it">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fdfdfe">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="WiFi Drop">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{}</title>
+    <link rel="manifest" href="/public/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/public/icon.svg">
     <link rel="stylesheet" href="/public/styles.css">
   </head>
   <body>{}</body>
-</html>"#,
+</html>"##,
         escape_html(title),
         body
     )

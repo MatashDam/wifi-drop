@@ -1,6 +1,7 @@
 const state = {
   items: window.WIFI_DROP.items || [],
   outbox: window.WIFI_DROP.outbox || [],
+  devices: window.WIFI_DROP.devices || [],
   adminToken: window.WIFI_DROP.adminToken,
   statusKey: "statusListening"
 };
@@ -11,6 +12,7 @@ const outboxFeed = document.querySelector("#outbox-feed");
 const statusEl = document.querySelector("#status");
 const itemCount = document.querySelector("#item-count");
 const outboxCount = document.querySelector("#outbox-count");
+const deviceFeed = document.querySelector("#device-feed");
 const qrEl = document.querySelector("#qr");
 const qrBadge = document.querySelector("#qr-badge");
 const urlEl = document.querySelector("#drop-url");
@@ -20,8 +22,10 @@ const openFolder = document.querySelector("#open-folder");
 const pcTextForm = document.querySelector("#pc-text-form");
 const pcText = document.querySelector("#pc-text");
 const pcSendText = document.querySelector("#pc-send-text");
+const pcSendClipboard = document.querySelector("#pc-send-clipboard");
 const pcFileForm = document.querySelector("#pc-file-form");
 const pcFiles = document.querySelector("#pc-files");
+const pcDropZone = document.querySelector("#pc-drop-zone");
 const pcSelectedFilesEl = document.querySelector("#pc-selected-files");
 const pcSendFiles = document.querySelector("#pc-send-files");
 
@@ -37,6 +41,8 @@ renderPcSelectedFiles();
 updatePcTextButton();
 window.setInterval(refreshItems, 1500);
 window.setInterval(refreshOutbox, 1500);
+window.setInterval(refreshDevices, 3000);
+refreshDevices();
 
 copyLink.addEventListener("click", async () => {
   await navigator.clipboard.writeText(urlEl.textContent);
@@ -68,6 +74,17 @@ regenerate.addEventListener("click", async () => {
 
 pcText.addEventListener("input", updatePcTextButton);
 
+pcSendClipboard.addEventListener("click", async () => {
+  try {
+    const text = (await navigator.clipboard.readText()).trim();
+    if (!text) return flash("clipboardEmpty");
+    if (!await sendTextToPhone(text)) return flash("pcTextSendFailed");
+    flash("clipboardSent");
+  } catch (_) {
+    flash("clipboardFailed");
+  }
+});
+
 pcTextForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = pcText.value.trim();
@@ -76,15 +93,9 @@ pcTextForm.addEventListener("submit", async (event) => {
   pcSendText.disabled = true;
   pcSendText.textContent = t("sending");
   try {
-    const res = await fetch(`/api/outbox/text?admin=${encodeURIComponent(state.adminToken)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
-    });
-    if (!res.ok) return flash("pcTextSendFailed");
+    if (!await sendTextToPhone(text)) return flash("pcTextSendFailed");
     pcText.value = "";
     updatePcTextButton();
-    await refreshOutbox();
     flash("pcTextSent");
   } finally {
     updatePcTextButton();
@@ -95,6 +106,28 @@ pcFiles.addEventListener("change", () => {
   pcSelectedFiles = pcSelectedFiles.concat(Array.from(pcFiles.files || []));
   pcFiles.value = "";
   renderPcSelectedFiles();
+});
+
+for (const eventName of ["dragenter", "dragover"]) {
+  pcDropZone.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    pcDropZone.classList.add("drag-over");
+  });
+}
+
+for (const eventName of ["dragleave", "drop"]) {
+  pcDropZone.addEventListener(eventName, () => {
+    pcDropZone.classList.remove("drag-over");
+  });
+}
+
+pcDropZone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  const files = Array.from(event.dataTransfer?.files || []);
+  if (!files.length) return;
+  pcSelectedFiles = pcSelectedFiles.concat(files);
+  renderPcSelectedFiles();
+  flash("filesQueued");
 });
 
 pcSelectedFilesEl.addEventListener("click", (event) => {
@@ -152,9 +185,31 @@ async function refreshOutbox() {
   }
 }
 
+async function refreshDevices() {
+  const res = await fetch(`/api/devices?admin=${encodeURIComponent(state.adminToken)}`);
+  if (!res.ok) return;
+  const data = await res.json();
+  const latest = data.devices || [];
+  if (JSON.stringify(latest) !== JSON.stringify(state.devices)) {
+    state.devices = latest;
+    renderDevices();
+  }
+}
+
+async function sendTextToPhone(text) {
+  const res = await fetch(`/api/outbox/text?admin=${encodeURIComponent(state.adminToken)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  if (res.ok) await refreshOutbox();
+  return res.ok;
+}
+
 function render() {
   renderReceived();
   renderOutbox();
+  renderDevices();
 }
 
 function renderReceived() {
@@ -190,6 +245,43 @@ function renderOutbox() {
     showCopy: false,
     meta: t("readyForIphone")
   })).join("");
+}
+
+function renderDevices() {
+  if (!state.devices.length) {
+    deviceFeed.innerHTML = `
+      <article class="device-card empty-device">
+        <span class="device-icon" aria-hidden="true"></span>
+        <div>
+          <strong>${escapeHtml(t("deviceEmptyTitle"))}</strong>
+          <p>${escapeHtml(t("deviceEmptyBody"))}</p>
+        </div>
+      </article>
+    `;
+    return;
+  }
+
+  deviceFeed.innerHTML = state.devices.map((device) => {
+    const online = isDeviceOnline(device.lastSeen);
+    return `
+      <article class="device-card">
+        <span class="device-icon" aria-hidden="true"></span>
+        <div>
+          <strong>${escapeHtml(device.name || "iPhone")}</strong>
+          <p>${escapeHtml(online ? t("deviceOnline") : t("deviceOffline"))}</p>
+        </div>
+        <button class="small-button" type="button" data-focus-text>${escapeHtml(t("focusText"))}</button>
+        <button class="small-button" type="button" data-pick-files>${escapeHtml(t("pickFiles"))}</button>
+      </article>
+    `;
+  }).join("");
+
+  for (const button of deviceFeed.querySelectorAll("[data-focus-text]")) {
+    button.addEventListener("click", () => pcText.focus());
+  }
+  for (const button of deviceFeed.querySelectorAll("[data-pick-files]")) {
+    button.addEventListener("click", () => pcFiles.click());
+  }
 }
 
 function receivedRow(item, options = {}) {
@@ -252,6 +344,11 @@ function updatePcFilesButton() {
   if (pcSelectedFiles.length === 0) pcSendFiles.textContent = t("sendToIphoneFile");
   else if (pcSelectedFiles.length === 1) pcSendFiles.textContent = t("sendToIphoneOneFile");
   else pcSendFiles.textContent = t("sendToIphoneManyFiles", { count: pcSelectedFiles.length });
+}
+
+function isDeviceOnline(lastSeen) {
+  const seen = new Date(lastSeen).getTime();
+  return Number.isFinite(seen) && Date.now() - seen < 12000;
 }
 
 function attachCopyHandlers(root) {

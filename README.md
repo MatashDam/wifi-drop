@@ -6,8 +6,8 @@ WiFi Drop is a lightweight Windows app for sending text, photos, and files betwe
 
 No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code with the iPhone camera, and transfer from Safari.
 
-> ### 💾 [**Download WiFi Drop for Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.1_x64-setup.exe)
-> **Latest Version:** [v0.1.1](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.1) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Free & Open Source
+> ### 💾 [**Download WiFi Drop for Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.2_x64-setup.exe)
+> **Latest Version:** [v0.1.2](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.2) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Free & Open Source
 
 ![WiFi Drop desktop screenshot](docs/screenshots/desktop.png)
 
@@ -18,6 +18,10 @@ No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code
 - Send text from iPhone Safari to a Windows PC.
 - Send photos and files through the browser file picker.
 - Send text and files back from the Windows dashboard to the iPhone.
+- See nearby phones automatically when the mobile page is open.
+- Drag and drop files onto the Windows dashboard before sending them to the iPhone.
+- Send the current Windows clipboard to the iPhone with one click.
+- Add the mobile page to the iPhone Home Screen where supported by Safari.
 - Scan a temporary QR code generated at app launch.
 - Use the UI in Italian, English, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean.
 - Keep transfers on the local network.
@@ -35,6 +39,8 @@ The desktop app shows:
 - a QR code containing a temporary drop link
 - a list of received text snippets and files
 - a Send to iPhone section for preparing text and files from the PC
+- a Nearby Devices panel that marks the phone online while the Safari page is open
+- a drag-and-drop file zone and a Send Clipboard action
 
 The iPhone opens the drop link in Safari. The mobile page has two separate modes:
 
@@ -42,6 +48,8 @@ The iPhone opens the drop link in Safari. The mobile page has two separate modes
 - `File`: sends only selected files. Text left in the text tab is not included.
 
 The same mobile page also shows a `From PC` section. Text prepared on Windows can be copied on the iPhone, and files prepared on Windows can be opened or downloaded from Safari.
+
+On supported iOS/Safari setups, the mobile page also includes basic PWA metadata so it can be added to the Home Screen. The QR link remains the reliable fallback, especially after regenerating the token or restarting the Windows app.
 
 The interface follows the browser or system language automatically, and both the Windows dashboard and iPhone page include a compact language selector.
 
@@ -51,7 +59,7 @@ The interface follows the browser or system language automatically, and both the
 Go to the **[Releases](../../releases)** section on GitHub and download the latest installer:
 
 ```text
-WiFi Drop_0.1.1_x64-setup.exe
+WiFi Drop_0.1.2_x64-setup.exe
 ```
 
 ### 2. Windows SmartScreen Notice

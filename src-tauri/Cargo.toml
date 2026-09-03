@@ -1,7 +1,7 @@
 [package]
 name = "wifi-drop"
-version = "0.1.1"
-description = "Local Wi-Fi text and file drop from iPhone to Windows."
+version = "0.1.2"
+description = "Local Wi-Fi text and file transfer between iPhone and Windows."
 authors = ["WiFi Drop"]
 license = ""
 repository = ""

@@ -6,8 +6,8 @@ WiFi Drop è un'applicazione leggera per Windows che consente di inviare testo, 
 
 Nessuna app da installare su iPhone, nessun account, nessun passaggio dal cloud. Apri WiFi Drop su Windows, inquadra il codice QR con la fotocamera dell'iPhone e trasferisci direttamente tramite Safari.
 
-> ### 💾 [**Scarica WiFi Drop per Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.1_x64-setup.exe)
-> **Ultima versione:** [v0.1.1](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.1) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Gratuito e Open Source
+> ### 💾 [**Scarica WiFi Drop per Windows (.exe)**](https://github.com/MatashDam/wifi-drop/releases/latest/download/WiFi.Drop_0.1.2_x64-setup.exe)
+> **Ultima versione:** [v0.1.2](https://github.com/MatashDam/wifi-drop/releases/tag/v0.1.2) &nbsp;|&nbsp; Windows 10/11 (64-bit) &nbsp;|&nbsp; Gratuito e Open Source
 
 ![Schermata desktop di WiFi Drop](docs/screenshots/desktop.png)
 
@@ -18,6 +18,10 @@ Nessuna app da installare su iPhone, nessun account, nessun passaggio dal cloud.
 - **Invio testo da iPhone a PC**: incolla o digita testo da Safari e trovalo subito pronto da copiare sul PC.
 - **Invio foto e file**: seleziona qualsiasi file o foto tramite il selettore nativo di iOS.
 - **Invio bidirezionale da PC a iPhone**: prepara testi o file dalla dashboard Windows per scaricarli o copiarli su iPhone.
+- **Dispositivi vicini**: quando la pagina mobile è aperta, l'iPhone appare automaticamente online nella dashboard.
+- **Drag & drop reale**: trascina file nella dashboard Windows per prepararli all'invio verso iPhone.
+- **Invio clipboard**: manda il contenuto degli appunti Windows all'iPhone con un clic.
+- **Base PWA per iPhone**: dove Safari lo consente, la pagina può essere aggiunta alla schermata Home.
 - **Codice QR temporaneo**: generato a ogni avvio per la massima privacy.
 - **Supporto multilingua**: interfaccia disponibile in 9 lingue (Italiano, Inglese, Spagnolo, Francese, Tedesco, Portoghese, Cinese, Giapponese, Coreano).
 - **Rete locale protetta**: nessun dato viene inviato a server esterni.
@@ -34,12 +38,16 @@ L'applicazione desktop mostra:
 - Il codice QR contenente il link temporaneo per l'iPhone
 - L'elenco degli elementi e dei file ricevuti
 - La sezione *Invia all'iPhone* per preparare testo e file da trasmettere al telefono
+- Il pannello *Dispositivi vicini*, che mostra l'iPhone online mentre Safari è aperto
+- Una zona drag & drop e il pulsante *Invia clipboard*
 
 L'iPhone apre il link in Safari. La pagina mobile offre due modalità separate:
 - **Testo**: invia esclusivamente il testo digitato.
 - **File**: invia esclusivamente i file selezionati (il testo inserito nella scheda Testo non viene incluso).
 
 La stessa pagina su iPhone mostra la sezione **Dal PC**: i testi preparati su Windows possono essere copiati negli appunti dell'iPhone e i file possono essere aperti o scaricati da Safari.
+
+Su configurazioni iOS/Safari compatibili, la pagina mobile include anche i metadati PWA di base per essere aggiunta alla schermata Home. Il QR resta comunque il fallback più affidabile, soprattutto dopo la rigenerazione del token o il riavvio dell'app Windows.
 
 L'interfaccia rileva automaticamente la lingua di sistema o del browser ed è sempre possibile selezionarla manualmente tramite il menu lingue dedicato.
 
@@ -49,7 +57,7 @@ L'interfaccia rileva automaticamente la lingua di sistema o del browser ed è se
 Vai nella sezione **[Releases](../../releases)** del repository GitHub e scarica l'installer per Windows:
 
 ```text
-WiFi Drop_0.1.1_x64-setup.exe
+WiFi Drop_0.1.2_x64-setup.exe
 ```
 
 ### 2. Avviso Windows SmartScreen

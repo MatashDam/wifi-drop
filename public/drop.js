@@ -15,6 +15,7 @@ const i18n = window.WiFiDropI18n;
 
 let selectedFiles = [];
 let outbox = [];
+const device = getDevice();
 
 i18n.init(() => {
   updateTextButton();
@@ -56,7 +57,13 @@ textArea.addEventListener("input", updateTextButton);
 updateTextButton();
 renderSelectedFiles();
 refreshOutbox();
+sendDeviceHello();
 window.setInterval(refreshOutbox, 1500);
+window.setInterval(sendDeviceHello, 4000);
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/public/sw.js").catch(() => {});
+}
 
 textForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -115,6 +122,18 @@ async function refreshOutbox() {
     outbox = latest;
     renderOutbox();
   }
+}
+
+async function sendDeviceHello() {
+  await fetch(`/api/device/${encodeURIComponent(token)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: device.id,
+      name: device.name,
+      userAgent: navigator.userAgent
+    })
+  }).catch(() => {});
 }
 
 function setMode(mode) {
@@ -264,4 +283,40 @@ function escapeAttr(value) {
 
 function t(key, params) {
   return i18n.t(key, params);
+}
+
+function getDevice() {
+  const id = readSaved("wifi-drop-device-id") || makeDeviceId();
+  saveValue("wifi-drop-device-id", id);
+  return {
+    id,
+    name: readSaved("wifi-drop-device-name") || defaultDeviceName()
+  };
+}
+
+function defaultDeviceName() {
+  const ua = navigator.userAgent || "";
+  if (/iPad/i.test(ua)) return "iPad";
+  if (/Android/i.test(ua)) return "Android";
+  if (/iPhone|iPod/i.test(ua)) return "iPhone";
+  return "Phone";
+}
+
+function readSaved(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveValue(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (_) {}
+}
+
+function makeDeviceId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `device-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }

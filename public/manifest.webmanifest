@@ -1,0 +1,18 @@
+{
+  "name": "WiFi Drop",
+  "short_name": "WiFi Drop",
+  "description": "Local Wi-Fi text and file transfer between iPhone and Windows.",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fdfdfe",
+  "theme_color": "#007aff",
+  "icons": [
+    {
+      "src": "/public/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
