@@ -9,13 +9,17 @@ const selectedFilesEl = document.querySelector("#selected-files");
 const fileSources = document.querySelectorAll(".file-source");
 const segments = document.querySelectorAll(".segment");
 const panels = document.querySelectorAll(".mode-panel");
+const phoneOutbox = document.querySelector("#phone-outbox");
+const phoneOutboxCount = document.querySelector("#phone-outbox-count");
 const i18n = window.WiFiDropI18n;
 
 let selectedFiles = [];
+let outbox = [];
 
 i18n.init(() => {
   updateTextButton();
   renderSelectedFiles();
+  renderOutbox();
 });
 
 for (const segment of segments) {
@@ -37,9 +41,22 @@ selectedFilesEl.addEventListener("click", (event) => {
   renderSelectedFiles();
 });
 
+phoneOutbox.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-copy-pc-text]");
+  if (!button) return;
+  await navigator.clipboard.writeText(button.dataset.copyPcText || "");
+  button.textContent = t("copied");
+  showToast(t("copiedFromPc"));
+  window.setTimeout(() => {
+    button.textContent = t("copy");
+  }, 1600);
+});
+
 textArea.addEventListener("input", updateTextButton);
 updateTextButton();
 renderSelectedFiles();
+refreshOutbox();
+window.setInterval(refreshOutbox, 1500);
 
 textForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -89,6 +106,17 @@ fileForm.addEventListener("submit", async (event) => {
   showToast(t("filesSent"));
 });
 
+async function refreshOutbox() {
+  const res = await fetch(`/api/phone-outbox/${encodeURIComponent(token)}`);
+  if (!res.ok) return;
+  const data = await res.json();
+  const latest = data.items || [];
+  if (JSON.stringify(latest) !== JSON.stringify(outbox)) {
+    outbox = latest;
+    renderOutbox();
+  }
+}
+
 function setMode(mode) {
   for (const segment of segments) {
     const active = segment.dataset.mode === mode;
@@ -116,6 +144,58 @@ function renderSelectedFiles() {
   updateFilesButton();
 }
 
+function renderOutbox() {
+  phoneOutboxCount.textContent = outbox.length === 0
+    ? t("phoneInboxEmpty")
+    : t(outbox.length === 1 ? "phoneInboxOne" : "phoneInboxMany", { count: outbox.length });
+
+  if (!outbox.length) {
+    phoneOutbox.innerHTML = `
+      <article class="empty-state">
+        <span class="empty-icon" aria-hidden="true"></span>
+        <strong>${escapeHtml(t("phoneInboxEmpty"))}</strong>
+        <p>${escapeHtml(t("phoneInboxEmptyBody"))}</p>
+      </article>
+    `;
+    return;
+  }
+
+  phoneOutbox.innerHTML = outbox.map((item) => {
+    const time = new Date(item.createdAt).toLocaleString(localeForCurrentLanguage(), {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    if (item.kind === "text") {
+      return `
+        <article class="received-row">
+          <span class="row-thumb text-thumb">TXT</span>
+          <div class="row-content">
+            <strong>"${escapeHtml(item.text)}"</strong>
+            <span>${escapeHtml(t("sentFromPc"))} · ${time}</span>
+          </div>
+          <button class="small-button" data-copy-pc-text="${escapeAttr(item.text)}" type="button">${escapeHtml(t("copy"))}</button>
+        </article>
+      `;
+    }
+
+    const ext = extensionLabel(item.originalName);
+    const isImage = /^image\//.test(item.mimeType || "");
+    return `
+      <article class="received-row">
+        <span class="row-thumb ${isImage ? "image-thumb" : "file-thumb"}">${isImage ? "" : escapeHtml(ext)}</span>
+        <div class="row-content">
+          <strong>${escapeHtml(item.originalName)}</strong>
+          <span>${formatBytes(item.size)} · ${time}</span>
+        </div>
+        <a class="small-button download" href="/outbox-files/${encodeURIComponent(token)}/${encodeURIComponent(item.id)}">${escapeHtml(t("open"))}</a>
+      </article>
+    `;
+  }).join("");
+}
+
 function updateTextButton() {
   sendText.disabled = textArea.value.trim().length === 0;
 }
@@ -138,6 +218,12 @@ function showToast(message, isError = false) {
   }, 2400);
 }
 
+function extensionLabel(name) {
+  const ext = String(name || "").split(".").pop();
+  if (!ext || ext === name) return "FILE";
+  return ext.slice(0, 4).toUpperCase();
+}
+
 function formatBytes(bytes) {
   if (!bytes) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -148,6 +234,20 @@ function formatBytes(bytes) {
     unit += 1;
   }
   return `${size.toFixed(size >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function localeForCurrentLanguage() {
+  return {
+    it: "it-IT",
+    en: "en-US",
+    es: "es-ES",
+    fr: "fr-FR",
+    de: "de-DE",
+    pt: "pt-PT",
+    zh: "zh-CN",
+    ja: "ja-JP",
+    ko: "ko-KR"
+  }[i18n.language] || "it-IT";
 }
 
 function escapeHtml(value) {

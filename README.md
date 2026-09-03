@@ -1,8 +1,8 @@
 # WiFi Drop
 
-WiFi Drop is a lightweight Windows app for sending text, photos, and files from an iPhone to a PC over the same local Wi-Fi network.
+WiFi Drop is a lightweight Windows app for sending text, photos, and files between an iPhone and a PC over the same local Wi-Fi network.
 
-No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code with the iPhone camera, and send from Safari.
+No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code with the iPhone camera, and transfer from Safari.
 
 ![WiFi Drop desktop screenshot](docs/screenshots/desktop.png)
 
@@ -12,6 +12,7 @@ No iPhone app, no account, no cloud. Open WiFi Drop on Windows, scan the QR code
 
 - Send text from iPhone Safari to a Windows PC.
 - Send photos and files through the browser file picker.
+- Send text and files back from the Windows dashboard to the iPhone.
 - Scan a temporary QR code generated at app launch.
 - Use the UI in Italian, English, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean.
 - Keep transfers on the local network.
@@ -28,11 +29,14 @@ The desktop app shows:
 - a private dashboard link for the PC
 - a QR code containing a temporary drop link
 - a list of received text snippets and files
+- a Send to iPhone section for preparing text and files from the PC
 
 The iPhone opens the drop link in Safari. The mobile page has two separate modes:
 
 - `Text`: sends only the text field.
 - `File`: sends only selected files. Text left in the text tab is not included.
+
+The same mobile page also shows a `From PC` section. Text prepared on Windows can be copied on the iPhone, and files prepared on Windows can be opened or downloaded from Safari.
 
 The interface follows the browser or system language automatically, and both the Windows dashboard and iPhone page include a compact language selector.
 

@@ -199,7 +199,7 @@ button:disabled {
 .desktop-layout {
   min-height: calc(100vh - 68px);
   display: grid;
-  grid-template-columns: 512px minmax(0, 1fr);
+  grid-template-columns: 470px minmax(0, 1fr);
 }
 
 .pairing-pane {
@@ -351,8 +351,77 @@ code {
   font-weight: 590;
 }
 
+.activity-pane {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--white);
+}
+
+.send-pane {
+  min-width: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fbfbfd;
+}
+
+.send-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.86fr);
+  gap: 12px;
+  padding: 0 26px 14px;
+}
+
+.desktop-send-box {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.desktop-textarea {
+  min-height: 112px;
+  font-size: 0.9rem;
+}
+
+.desktop-file-button {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px dashed rgba(0, 122, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.desktop-file-button span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outbox-feed {
+  max-height: 156px;
+  overflow: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.outbox-feed .received-row {
+  min-height: 58px;
+  padding: 10px 26px;
+}
+
+.outbox-feed .empty-state {
+  height: 126px;
+}
+
 .received-pane {
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--white);
@@ -510,7 +579,8 @@ code {
   min-height: min(878px, calc(100vh - 36px));
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-radius: 8px;
   background: var(--white);
   box-shadow: 0 30px 70px -20px rgba(20, 20, 40, 0.45);
@@ -768,6 +838,54 @@ textarea::placeholder {
   color: var(--white);
 }
 
+.phone-inbox {
+  display: grid;
+  gap: 10px;
+  margin: 0 22px 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.phone-inbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.phone-inbox-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 590;
+}
+
+.phone-inbox-header p {
+  margin: 5px 0 0;
+  color: var(--faint);
+  font-size: 0.78rem;
+}
+
+.phone-outbox-list {
+  display: grid;
+  gap: 8px;
+}
+
+.phone-outbox-list .received-row {
+  min-height: 58px;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #fafafc;
+}
+
+.phone-outbox-list .empty-state {
+  height: auto;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #fafafc;
+}
+
 .toast-pill {
   position: fixed;
   left: 50%;
@@ -813,6 +931,16 @@ textarea::placeholder {
     grid-template-columns: 1fr;
   }
 
+  .activity-pane {
+    min-height: auto;
+  }
+
+  .send-controls {
+    grid-template-columns: 1fr;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
   .pairing-pane {
     border-right: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -820,7 +948,8 @@ textarea::placeholder {
   }
 
   .received-header,
-  .received-row {
+  .received-row,
+  .outbox-feed .received-row {
     padding-left: 18px;
     padding-right: 18px;
   }

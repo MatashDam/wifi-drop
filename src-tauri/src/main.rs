@@ -34,7 +34,9 @@ struct ServerState {
     port: u16,
     received_dir: PathBuf,
     manifest_path: PathBuf,
+    outgoing_manifest_path: PathBuf,
     items: Arc<Mutex<Vec<Item>>>,
+    outgoing_items: Arc<Mutex<Vec<Item>>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -76,6 +78,7 @@ struct RunInfo {
 struct DashboardBoot {
     admin_token: String,
     items: Vec<Item>,
+    outbox: Vec<Item>,
     received_dir: String,
 }
 
@@ -150,8 +153,7 @@ fn bind_port(start: u16) -> std::io::Result<(TcpListener, u16)> {
         }
     }
 
-    TcpListener::bind(("0.0.0.0", start))
-        .map(|listener| (listener, start))
+    TcpListener::bind(("0.0.0.0", start)).map(|listener| (listener, start))
 }
 
 impl ServerState {
@@ -160,8 +162,11 @@ impl ServerState {
             .unwrap_or(std::env::current_dir()?)
             .join("WiFi Drop");
         fs::create_dir_all(&received_dir)?;
+        fs::create_dir_all(received_dir.join("To iPhone"))?;
         let manifest_path = received_dir.join("items.json");
+        let outgoing_manifest_path = received_dir.join("outbox.json");
         let items = load_items(&manifest_path);
+        let outgoing_items = load_items(&outgoing_manifest_path);
 
         Ok(Self {
             admin_token: make_token(),
@@ -169,7 +174,9 @@ impl ServerState {
             port,
             received_dir,
             manifest_path,
+            outgoing_manifest_path,
             items: Arc::new(Mutex::new(items)),
+            outgoing_items: Arc::new(Mutex::new(outgoing_items)),
         })
     }
 
@@ -217,6 +224,18 @@ impl ServerState {
         save_items(&self.manifest_path, &items);
         item
     }
+
+    fn add_outgoing_item(&self, item: Item) -> Item {
+        let mut items = self.outgoing_items.lock().unwrap();
+        items.insert(0, item.clone());
+        items.truncate(MAX_ITEMS);
+        save_items(&self.outgoing_manifest_path, &items);
+        item
+    }
+
+    fn outgoing_dir(&self) -> PathBuf {
+        self.received_dir.join("To iPhone")
+    }
 }
 
 fn build_router(state: ServerState) -> Router {
@@ -224,11 +243,16 @@ fn build_router(state: ServerState) -> Router {
         .route("/", get(dashboard))
         .route("/drop/{token}", get(drop_page))
         .route("/api/items", get(api_items))
+        .route("/api/outbox", get(api_outbox))
+        .route("/api/outbox/text", post(send_text_to_phone))
+        .route("/api/outbox/upload", post(upload_files_to_phone))
+        .route("/api/phone-outbox/{token}", get(api_outbox_for_phone))
         .route("/api/regenerate", post(regenerate))
         .route("/api/open-folder", post(open_folder))
         .route("/api/text/{token}", post(receive_text))
         .route("/api/upload/{token}", post(upload_files))
         .route("/files/{id}", get(download_file))
+        .route("/outbox-files/{token}/{id}", get(download_outgoing_file))
         .route("/public/{*asset}", get(asset))
         .with_state(state)
 }
@@ -241,9 +265,11 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
     let drop_url = state.drop_url();
     let qr = qr_data_url(&drop_url).unwrap_or_default();
     let items = state.items.lock().unwrap().clone();
+    let outbox = state.outgoing_items.lock().unwrap().clone();
     let boot = DashboardBoot {
         admin_token: state.admin_token.clone(),
         items,
+        outbox,
         received_dir: state.received_dir.to_string_lossy().to_string(),
     };
     let boot_json = serde_json::to_string(&boot).unwrap_or_else(|_| "{}".to_string());
@@ -301,18 +327,49 @@ async fn dashboard(Query(query): Query<AuthQuery>, State(state): State<ServerSta
             </div>
           </section>
 
-          <section class="received-pane">
-            <header class="received-header">
-              <div>
-                <h2 data-i18n="receivedTitle">Ricevuti</h2>
-                <p id="item-count" data-i18n="noItems">Nessun elemento</p>
-              </div>
-              <button id="open-folder" class="small-button" type="button" data-i18n="openFolder">Apri cartella</button>
-            </header>
+          <div class="activity-pane">
+            <section class="send-pane">
+              <header class="received-header">
+                <div>
+                  <h2 data-i18n="sendToPhoneTitle">Invia all'iPhone</h2>
+                  <p id="outbox-count" data-i18n="noOutboxItems">Niente pronto</p>
+                </div>
+              </header>
 
-            <p class="path-line">Documenti\\WiFi Drop</p>
-            <section id="feed" class="feed" aria-live="polite"></section>
-          </section>
+              <div class="send-controls">
+                <form id="pc-text-form" class="desktop-send-box">
+                  <label for="pc-text" data-i18n="pcTextLabel">Testo per iPhone</label>
+                  <textarea id="pc-text" class="desktop-textarea" rows="4" placeholder="Scrivi o incolla testo da leggere sul telefono" data-i18n-placeholder="pcTextPlaceholder"></textarea>
+                  <button id="pc-send-text" class="primary small-button" type="submit" data-i18n="sendToIphoneText">Invia testo</button>
+                </form>
+
+                <form id="pc-file-form" class="desktop-send-box">
+                  <label for="pc-files" class="desktop-file-button">
+                    <span class="row-icon file-icon" aria-hidden="true"></span>
+                    <span data-i18n="choosePcFiles">Scegli file dal PC</span>
+                  </label>
+                  <input id="pc-files" class="visually-hidden" type="file" multiple>
+                  <div id="pc-selected-files" class="selected-files" hidden></div>
+                  <button id="pc-send-files" class="primary small-button" type="submit" data-i18n="sendToIphoneFile">Invia file</button>
+                </form>
+              </div>
+
+              <section id="outbox-feed" class="outbox-feed" aria-live="polite"></section>
+            </section>
+
+            <section class="received-pane">
+              <header class="received-header">
+                <div>
+                  <h2 data-i18n="receivedTitle">Ricevuti</h2>
+                  <p id="item-count" data-i18n="noItems">Nessun elemento</p>
+                </div>
+                <button id="open-folder" class="small-button" type="button" data-i18n="openFolder">Apri cartella</button>
+              </header>
+
+              <p class="path-line">Documenti\\WiFi Drop</p>
+              <section id="feed" class="feed" aria-live="polite"></section>
+            </section>
+          </div>
         </div>
       </section>
     </main>
@@ -386,6 +443,16 @@ async fn drop_page(
           <button id="send-files" class="phone-cta" type="submit" data-i18n="sendFile">Invia file</button>
         </form>
 
+        <section class="phone-inbox">
+          <header class="phone-inbox-header">
+            <div>
+              <h2 data-i18n="phoneInboxTitle">Dal PC</h2>
+              <p id="phone-outbox-count" data-i18n="phoneInboxEmpty">Niente da scaricare</p>
+            </div>
+          </header>
+          <div id="phone-outbox" class="phone-outbox-list" aria-live="polite"></div>
+        </section>
+
         <p id="mobile-status" class="toast-pill" hidden>Pronto</p>
       </section>
     </main>
@@ -410,10 +477,32 @@ async fn api_items(Query(query): Query<AuthQuery>, State(state): State<ServerSta
     .into_response()
 }
 
-async fn regenerate(
-    Query(query): Query<AuthQuery>,
+async fn api_outbox(Query(query): Query<AuthQuery>, State(state): State<ServerState>) -> Response {
+    if !state.is_admin(&query) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    Json(ItemsResponse {
+        items: state.outgoing_items.lock().unwrap().clone(),
+    })
+    .into_response()
+}
+
+async fn api_outbox_for_phone(
+    AxumPath(token): AxumPath<String>,
     State(state): State<ServerState>,
 ) -> Response {
+    if !state.is_drop_token(&token) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    Json(ItemsResponse {
+        items: state.outgoing_items.lock().unwrap().clone(),
+    })
+    .into_response()
+}
+
+async fn regenerate(Query(query): Query<AuthQuery>, State(state): State<ServerState>) -> Response {
     if !state.is_admin(&query) {
         return StatusCode::FORBIDDEN.into_response();
     }
@@ -430,20 +519,129 @@ async fn regenerate(
     Json(RegenerateResponse { drop_url, qr }).into_response()
 }
 
-async fn open_folder(
-    Query(query): Query<AuthQuery>,
-    State(state): State<ServerState>,
-) -> Response {
+async fn open_folder(Query(query): Query<AuthQuery>, State(state): State<ServerState>) -> Response {
     if !state.is_admin(&query) {
         return StatusCode::FORBIDDEN.into_response();
     }
 
     #[cfg(target_os = "windows")]
     {
-        let _ = Command::new("explorer.exe").arg(&state.received_dir).spawn();
+        let _ = Command::new("explorer.exe")
+            .arg(&state.received_dir)
+            .spawn();
     }
 
     Json(serde_json::json!({ "ok": true })).into_response()
+}
+
+async fn send_text_to_phone(
+    Query(query): Query<AuthQuery>,
+    State(state): State<ServerState>,
+    Json(payload): Json<TextRequest>,
+) -> Response {
+    if !state.is_admin(&query) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let text = payload.text.trim().to_string();
+    if text.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": "Il testo e vuoto." })),
+        )
+            .into_response();
+    }
+
+    let item = state.add_outgoing_item(Item {
+        id: Uuid::new_v4().to_string(),
+        created_at: Utc::now().to_rfc3339(),
+        kind: "text".to_string(),
+        text: Some(text),
+        original_name: None,
+        stored_name: None,
+        relative_path: None,
+        size: None,
+        mime_type: None,
+        source: "PC".to_string(),
+    });
+
+    Json(TextResponse { ok: true, item }).into_response()
+}
+
+async fn upload_files_to_phone(
+    Query(query): Query<AuthQuery>,
+    State(state): State<ServerState>,
+    mut multipart: Multipart,
+) -> Response {
+    if !state.is_admin(&query) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let mut created = Vec::new();
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        if field.name() != Some("files") {
+            continue;
+        }
+
+        let original_name = field
+            .file_name()
+            .map(ToString::to_string)
+            .unwrap_or_else(|| "file".to_string());
+        let mime_type = field
+            .content_type()
+            .map(ToString::to_string)
+            .unwrap_or_else(|| "application/octet-stream".to_string());
+        let bytes = match field.bytes().await {
+            Ok(bytes) => bytes,
+            Err(_) => continue,
+        };
+
+        let day = Utc::now().format("%Y-%m-%d").to_string();
+        let outbox_dir = state.outgoing_dir();
+        let day_dir = outbox_dir.join(&day);
+        let _ = fs::create_dir_all(&day_dir);
+        let stored_name = make_stored_name(&original_name);
+        let file_path = day_dir.join(&stored_name);
+
+        if fs::write(&file_path, &bytes).is_err() {
+            continue;
+        }
+
+        let relative_path = file_path
+            .strip_prefix(&state.received_dir)
+            .unwrap_or(&file_path)
+            .to_string_lossy()
+            .to_string();
+
+        let item = state.add_outgoing_item(Item {
+            id: Uuid::new_v4().to_string(),
+            created_at: Utc::now().to_rfc3339(),
+            kind: "file".to_string(),
+            text: None,
+            original_name: Some(original_name),
+            stored_name: Some(stored_name),
+            relative_path: Some(relative_path),
+            size: Some(bytes.len() as u64),
+            mime_type: Some(mime_type),
+            source: "PC".to_string(),
+        });
+        created.push(item);
+    }
+
+    if created.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": "Scegli almeno un file." })),
+        )
+            .into_response();
+    }
+
+    Json(UploadResponse {
+        ok: true,
+        items: created,
+    })
+    .into_response()
 }
 
 async fn receive_text(
@@ -457,7 +655,11 @@ async fn receive_text(
 
     let text = payload.text.trim().to_string();
     if text.is_empty() {
-        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({ "error": "Il testo e vuoto." }))).into_response();
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": "Il testo e vuoto." })),
+        )
+            .into_response();
     }
 
     let item = state.add_item(Item {
@@ -537,7 +739,11 @@ async fn upload_files(
     }
 
     if created.is_empty() {
-        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({ "error": "Scegli almeno un file." }))).into_response();
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": "Scegli almeno un file." })),
+        )
+            .into_response();
     }
 
     Json(UploadResponse {
@@ -558,7 +764,10 @@ async fn download_file(
 
     let item = {
         let items = state.items.lock().unwrap();
-        items.iter().find(|item| item.id == id && item.kind == "file").cloned()
+        items
+            .iter()
+            .find(|item| item.id == id && item.kind == "file")
+            .cloned()
     };
     let Some(item) = item else {
         return StatusCode::NOT_FOUND.into_response();
@@ -578,15 +787,77 @@ async fn download_file(
     };
 
     let original_name = item.original_name.unwrap_or_else(|| "file".to_string());
-    let mime = item
-        .mime_type
-        .unwrap_or_else(|| mime_guess::from_path(&file_path).first_or_octet_stream().to_string());
-    let disposition = format!("attachment; filename=\"{}\"", original_name.replace('"', ""));
+    let mime = item.mime_type.unwrap_or_else(|| {
+        mime_guess::from_path(&file_path)
+            .first_or_octet_stream()
+            .to_string()
+    });
+    let disposition = format!(
+        "attachment; filename=\"{}\"",
+        original_name.replace('"', "")
+    );
 
     let mut response = Response::new(Body::from(bytes));
     response.headers_mut().insert(
         header::CONTENT_TYPE,
-        HeaderValue::from_str(&mime).unwrap_or(HeaderValue::from_static("application/octet-stream")),
+        HeaderValue::from_str(&mime)
+            .unwrap_or(HeaderValue::from_static("application/octet-stream")),
+    );
+    response.headers_mut().insert(
+        header::CONTENT_DISPOSITION,
+        HeaderValue::from_str(&disposition).unwrap_or(HeaderValue::from_static("attachment")),
+    );
+    response
+}
+
+async fn download_outgoing_file(
+    AxumPath((token, id)): AxumPath<(String, String)>,
+    State(state): State<ServerState>,
+) -> Response {
+    if !state.is_drop_token(&token) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    let item = {
+        let items = state.outgoing_items.lock().unwrap();
+        items
+            .iter()
+            .find(|item| item.id == id && item.kind == "file")
+            .cloned()
+    };
+    let Some(item) = item else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    let Some(relative_path) = item.relative_path else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    let file_path = state.received_dir.join(relative_path);
+    if !is_inside(&file_path, &state.received_dir) {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+
+    let Ok(bytes) = fs::read(&file_path) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    let original_name = item.original_name.unwrap_or_else(|| "file".to_string());
+    let mime = item.mime_type.unwrap_or_else(|| {
+        mime_guess::from_path(&file_path)
+            .first_or_octet_stream()
+            .to_string()
+    });
+    let disposition = format!(
+        "attachment; filename=\"{}\"",
+        original_name.replace('"', "")
+    );
+
+    let mut response = Response::new(Body::from(bytes));
+    response.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_str(&mime)
+            .unwrap_or(HeaderValue::from_static("application/octet-stream")),
     );
     response.headers_mut().insert(
         header::CONTENT_DISPOSITION,
@@ -603,17 +874,26 @@ async fn asset(AxumPath(asset): AxumPath<String>) -> Response {
         )
             .into_response(),
         "i18n.js" => (
-            [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
+            [(
+                header::CONTENT_TYPE,
+                "application/javascript; charset=utf-8",
+            )],
             include_str!("../../public/i18n.js"),
         )
             .into_response(),
         "dashboard.js" => (
-            [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
+            [(
+                header::CONTENT_TYPE,
+                "application/javascript; charset=utf-8",
+            )],
             include_str!("../../public/dashboard.js"),
         )
             .into_response(),
         "drop.js" => (
-            [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
+            [(
+                header::CONTENT_TYPE,
+                "application/javascript; charset=utf-8",
+            )],
             include_str!("../../public/drop.js"),
         )
             .into_response(),
@@ -697,7 +977,10 @@ fn make_token() -> String {
 fn make_stored_name(original_name: &str) -> String {
     let path = Path::new(original_name);
     let ext = path.extension().and_then(|ext| ext.to_str()).unwrap_or("");
-    let stem = path.file_stem().and_then(|stem| stem.to_str()).unwrap_or("file");
+    let stem = path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("file");
     let safe_stem = sanitize_filename::sanitize(stem);
     let stamp = Utc::now().format("%Y-%m-%dT%H-%M-%S-%3fZ");
 
