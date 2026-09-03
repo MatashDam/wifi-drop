@@ -1,3 +1,5 @@
+[🇮🇹 **Leggi in Italiano**](README.it.md)
+
 # WiFi Drop
 
 WiFi Drop is a lightweight Windows app for sending text, photos, and files between an iPhone and a PC over the same local Wi-Fi network.
@@ -40,15 +42,33 @@ The same mobile page also shows a `From PC` section. Text prepared on Windows ca
 
 The interface follows the browser or system language automatically, and both the Windows dashboard and iPhone page include a compact language selector.
 
-## Install
+## Download & Installation
 
-Download the latest Windows installer from the Releases page and run:
+### 1. Download
+Go to the **[Releases](../../releases)** section on GitHub and download the latest installer:
 
 ```text
 WiFi Drop_0.1.0_x64-setup.exe
 ```
 
-Windows may show a SmartScreen warning until the app is code-signed.
+### 2. Windows SmartScreen Notice
+Since WiFi Drop is an open-source tool without an expensive corporate code-signing certificate, Windows Defender SmartScreen may display an alert on first launch (*"Windows protected your PC"* / *"Unknown publisher"*):
+1. Click **More info**.
+2. Click **Run anyway**.
+
+> The app is completely open source and local — you can inspect the full source code directly in this repository.
+
+### 3. Windows Firewall Prompt
+When starting WiFi Drop for the first time, Windows may ask for network permissions:
+- Check **Private networks (home or work networks)**.
+- Click **Allow access**.
+- Both your PC and your iPhone must be connected to the same local Wi-Fi network.
+
+### 4. How to Use
+1. Launch **WiFi Drop** on Windows.
+2. Open the **Camera app** on your iPhone and point it at the QR code on your PC screen.
+3. Tap the yellow link that appears in the camera viewfinder to open WiFi Drop in Safari.
+4. Start sending or receiving text and files immediately!
 
 ## Development
 
