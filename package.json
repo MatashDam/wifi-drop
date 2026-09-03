@@ -1,6 +1,6 @@
 {
   "name": "wifi-drop-tauri",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Lightweight local Wi-Fi drop app for Windows and iPhone.",
   "scripts": {
